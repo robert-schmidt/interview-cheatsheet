@@ -1,13 +1,13 @@
 <div align="center">
 
-# `O(1)` constant·time
+# `O(1)` interview cheat sheet
 
 **everything you forgot, retrieved in constant time.**
 
 a single-page field guide for technical interviews:
 languages · principles · patterns · systems · machines that think
 
-[**→ open it**](https://robert-schmidt.github.io/constant-time/)
+[**→ open it**](https://robert-schmidt.github.io/interview-cheatsheet/)
 
 </div>
 
