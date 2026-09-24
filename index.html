@@ -1,0 +1,1696 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Constant Time</title>
+<meta name="description" content="O(1) recall for technical interviews: languages, OOP, SOLID, patterns, architecture, event-driven, cloud, system design, algorithms, security and AI/ML/LLM, all on one searchable page.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0c0d10; --bg2:#121419; --card:#15171d; --card2:#181b22; --code:#0a0b0e;
+    --ink:#e7e9ee; --ink-dim:#a4a9b6; --ink-faint:#6f7682;
+    --line:#262a33; --line2:#2f343f;
+    --red:#fa3a2a;
+    --amber:#f5a623; --teal:#2dd4bf; --violet:#a78bfa; --green:#5cd685; --blue:#5aa9ff; --pink:#ff7ab6; --lime:#c3e85a; --cyan:#4fd1e8;
+    --mono:'IBM Plex Mono',ui-monospace,monospace; --sans:'IBM Plex Sans',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;background:
+      radial-gradient(1200px 600px at 85% -10%, rgba(167,139,250,.10), transparent 60%),
+      radial-gradient(900px 500px at 0% 0%, rgba(45,212,191,.06), transparent 55%),
+      var(--bg);
+    color:var(--ink);font-family:var(--sans);font-size:13.5px;line-height:1.5;
+    letter-spacing:.1px;-webkit-font-smoothing:antialiased;
+  }
+  body::before{ /* grain */
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.035;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  header.top{
+    position:sticky;top:0;z-index:20;backdrop-filter:blur(10px);
+    background:linear-gradient(180deg, rgba(12,13,16,.97), rgba(12,13,16,.85));
+    border-bottom:1px solid var(--line);padding:14px 22px 12px;
+  }
+  .titlerow{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+  .brand{display:flex;align-items:center;gap:10px}
+  .logo{font-family:var(--mono);font-weight:700;font-size:13px;color:var(--bg);background:var(--violet);
+    padding:1px 6px;border-radius:5px;letter-spacing:0}
+  h1{font-family:var(--mono);font-weight:700;font-size:15px;letter-spacing:1.5px;text-transform:uppercase;margin:0}
+  .sub{color:var(--ink-faint);font-family:var(--mono);font-size:11px;letter-spacing:.5px}
+  .tools{display:flex;gap:10px;margin-left:auto;align-items:center;flex-wrap:wrap}
+  #q{background:var(--bg2);border:1px solid var(--line2);color:var(--ink);
+    font-family:var(--mono);font-size:12px;padding:7px 11px;border-radius:7px;width:300px;outline:none}
+  #q:focus{border-color:var(--violet)}
+  #q::placeholder{color:var(--ink-faint)}
+  .count{font-family:var(--mono);font-size:11px;color:var(--ink-faint);min-width:60px}
+  nav.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:11px}
+  .chip{font-family:var(--mono);font-size:10.5px;letter-spacing:.4px;text-transform:uppercase;
+    color:var(--ink-dim);background:var(--bg2);border:1px solid var(--line);
+    padding:4px 9px;border-radius:20px;cursor:pointer;user-select:none;transition:.15s}
+  .chip:hover{border-color:var(--ink-faint);color:var(--ink)}
+  .chip.on{background:var(--violet);border-color:var(--violet);color:var(--bg)}
+  .chip.zero{opacity:.35}
+  .chip sup{font-size:8.5px;margin-left:3px;opacity:.75}
+  main{position:relative;z-index:1;padding:20px 22px 60px;columns:340px;column-gap:18px}
+  .card{break-inside:avoid;background:linear-gradient(180deg,var(--card),var(--card2));
+    border:1px solid var(--line);border-left:3px solid var(--accent,var(--line2));
+    border-radius:11px;padding:14px 15px 13px;margin:0 0 18px;
+    box-shadow:0 1px 0 rgba(255,255,255,.02),0 10px 26px -18px rgba(0,0,0,.8)}
+  .card.hide{display:none}
+  .card h3{margin:0 0 9px;font-family:var(--mono);font-size:12.5px;font-weight:700;
+    letter-spacing:.4px;color:var(--ink);display:flex;align-items:center;gap:8px}
+  .card h3 .tag{font-size:9px;letter-spacing:.6px;text-transform:uppercase;color:var(--bg);
+    background:var(--accent,var(--ink-faint));padding:2px 6px;border-radius:5px;font-weight:700;white-space:nowrap}
+  ul{margin:0;padding:0;list-style:none}
+  li{position:relative;padding:2.5px 0 2.5px 13px;color:var(--ink-dim)}
+  li::before{content:"";position:absolute;left:0;top:10px;width:4px;height:4px;border-radius:1px;
+    background:var(--accent,var(--ink-faint));opacity:.7}
+  li b,li strong,dd b{color:var(--ink);font-weight:600}
+  code{font-family:var(--mono);font-size:11.5px;background:var(--code);border:1px solid var(--line);
+    color:var(--teal);padding:1px 5px;border-radius:5px;white-space:nowrap}
+  pre{background:var(--code);border:1px solid var(--line);border-radius:7px;padding:9px 10px;margin:8px 0 2px;
+    overflow-x:auto;scrollbar-width:thin;scrollbar-color:var(--line2) transparent;font-family:var(--mono);font-size:11.2px;line-height:1.5;color:var(--ink)}
+  pre code{background:none;border:0;padding:0;color:inherit;white-space:pre;font-size:inherit}
+  pre .c{color:var(--ink-faint)}
+  .lbl{font-family:var(--mono);font-size:10px;letter-spacing:.6px;text-transform:uppercase;color:var(--ink-faint);margin:9px 0 0}
+  .err{color:var(--red)}
+  .hl{color:var(--amber);font-weight:600}
+  .note{color:var(--ink-faint);font-style:italic}
+  .kv{display:grid;grid-template-columns:auto 1fr;gap:3px 10px;margin:3px 0 0}
+  .kv dt{font-family:var(--mono);font-size:11px;color:var(--ink);white-space:nowrap}
+  .kv dd{margin:0;color:var(--ink-dim)}
+  table{border-collapse:collapse;width:100%;font-size:11.5px;margin-top:4px}
+  th,td{text-align:left;padding:3px 6px;border-bottom:1px solid var(--line);color:var(--ink-dim);vertical-align:top}
+  th{font-family:var(--mono);font-size:10px;letter-spacing:.5px;text-transform:uppercase;color:var(--ink)}
+  td:first-child{color:var(--ink);font-family:var(--mono);font-size:11px;white-space:nowrap}
+  .lead{color:var(--ink);font-weight:600}
+  footer{position:relative;z-index:1;text-align:center;color:var(--ink-faint);
+    font-family:var(--mono);font-size:10.5px;padding:0 22px 40px;letter-spacing:.5px}
+  footer kbd{font-family:var(--mono);border:1px solid var(--line2);border-radius:4px;padding:0 4px}
+  .partial{position:relative;z-index:1;margin:16px 22px 0;font-family:var(--mono);font-size:11px;color:var(--amber)}
+  .noresult{display:none;text-align:center;color:var(--ink-faint);font-family:var(--mono);padding:60px;font-size:13px}
+  mark{background:rgba(245,166,35,.3);color:#fff;border-radius:3px;padding:0 1px}
+  .lvl{display:flex;border:1px solid var(--line2);border-radius:7px;overflow:hidden}
+  .lvl button{font-family:var(--mono);font-size:10.5px;letter-spacing:.4px;text-transform:uppercase;background:var(--bg2);
+    color:var(--ink-dim);border:0;border-left:1px solid var(--line);padding:6px 9px;cursor:pointer}
+  .lvl button:first-child{border-left:0}
+  .lvl button:hover{color:var(--ink)}
+  .lvl button[aria-pressed=true]{background:var(--teal);color:var(--bg);font-weight:700}
+  .card.focus{border-color:var(--line2);background:linear-gradient(180deg,#1a1830,var(--card2))}
+  dialog{background:var(--card);color:var(--ink);border:1px solid var(--line2);border-radius:14px;padding:26px 24px 20px;
+    width:min(520px,calc(100vw - 32px));box-shadow:0 30px 80px -20px rgba(0,0,0,.9)}
+  dialog::backdrop{background:rgba(6,7,9,.72);backdrop-filter:blur(4px)}
+  dialog h2{font-family:var(--mono);font-size:15px;letter-spacing:.8px;margin:0 0 4px}
+  dialog p{color:var(--ink-dim);margin:0 0 16px}
+  dialog .x{position:absolute;top:12px;right:14px;background:none;border:0;color:var(--ink-faint);font-size:20px;cursor:pointer;line-height:1}
+  dialog .x:hover{color:var(--ink)}
+  .opts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .opts button{text-align:left;background:var(--bg2);border:1px solid var(--line2);border-radius:10px;padding:12px 13px;cursor:pointer;
+    color:var(--ink-dim);font:inherit;font-size:12px;transition:.15s}
+  .opts button:hover,.opts button:focus-visible{border-color:var(--teal);color:var(--ink);outline:none}
+  .opts b{display:block;font-family:var(--mono);font-size:12.5px;color:var(--ink);margin-bottom:3px;letter-spacing:.5px;text-transform:uppercase}
+  .all-btn{margin-top:14px;width:100%;background:none;border:1px dashed var(--line2);border-radius:10px;padding:10px;
+    color:var(--ink-dim);font-family:var(--mono);font-size:11.5px;cursor:pointer}
+  .all-btn:hover{color:var(--ink);border-color:var(--ink-faint)}
+  @media (max-width:480px){.opts{grid-template-columns:1fr}}
+  @media (max-width:640px){
+    header.top{padding:12px 16px 10px} main{padding:16px 16px 48px}
+    .tools{margin-left:0;width:100%} #q{flex:1;width:auto}
+    .kv{grid-template-columns:1fr} .kv dt{white-space:normal} .kv dd{margin-bottom:4px}
+  }
+  @media print{body{background:#fff;color:#000}.card{break-inside:avoid;border:1px solid #ccc}header.top{position:static}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="titlerow">
+    <div class="brand"><span class="logo">O(1)</span><h1>Constant Time</h1></div>
+    <span class="sub">instant recall for technical interviews · languages · design · systems · AI</span>
+    <div class="tools">
+      <input id="q" type="search" placeholder="search… (e.g. kafka idempotency, rag, liskov, heap)" autocomplete="off" aria-label="Search cards">
+      <span class="count" id="count"></span>
+      <div class="lvl" id="lvl" role="group" aria-label="Interview level">
+        <button data-l="all">All</button><button data-l="j">Junior</button><button data-l="m">Mid</button><button data-l="s">Senior</button><button data-l="a">Architect</button>
+      </div>
+    </div>
+  </div>
+  <nav class="chips" id="chips">
+    <span class="chip on" data-c="all">All</span>
+    <span class="chip" data-c="lang">Languages</span>
+    <span class="chip" data-c="oop">OOP</span>
+    <span class="chip" data-c="solid">SOLID &amp; Principles</span>
+    <span class="chip" data-c="patterns">Patterns</span>
+    <span class="chip" data-c="arch">Architecture</span>
+    <span class="chip" data-c="events">Event-Driven</span>
+    <span class="chip" data-c="cloud">Cloud</span>
+    <span class="chip" data-c="sysdesign">System Design</span>
+    <span class="chip" data-c="data">Data / SQL</span>
+    <span class="chip" data-c="api">APIs / Web</span>
+    <span class="chip" data-c="algo">Algorithms</span>
+    <span class="chip" data-c="conc">Concurrency</span>
+    <span class="chip" data-c="sec">Security</span>
+    <span class="chip" data-c="test">Testing</span>
+    <span class="chip" data-c="ops">DevOps / SRE</span>
+    <span class="chip" data-c="ai">AI / ML / LLM</span>
+    <span class="chip" data-c="soft">Behavioral</span>
+    <span class="chip" data-c="terms">Glossary</span>
+  </nav>
+</header>
+
+<div class="partial" id="partial" hidden>no card has every word. Showing the closest matches</div>
+<main id="grid">
+
+  <!-- ================= LEVEL FOCUS ================= -->
+  <article class="card focus" data-lvl="j" data-cat="soft" data-k="junior entry level graduate focus plan" style="--accent:var(--teal)">
+    <h3><span class="tag">JUNIOR</span> What they test</h3>
+    <ul>
+      <li class="lead">Can you code, reason and learn? Fundamentals over breadth.</li>
+      <li><b>Coding round is king:</b> arrays, hash maps, strings, two pointers, BFS/DFS, simple DP. Say the Big-O.</li>
+      <li><b>One language, deep:</b> collections, errors, how references/values behave.</li>
+      <li><b>OOP pillars + SOLID basics</b>, SQL joins, HTTP + REST, git, writing a unit test.</li>
+      <li><b>AI literacy:</b> what an LLM/token/prompt is, and how you use AI tools responsibly.</li>
+      <li class="note">Think out loud, ask clarifying questions, show curiosity. Unfinished but well reasoned beats silent and perfect.</li>
+    </ul>
+  </article>
+
+  <article class="card focus" data-lvl="m" data-cat="soft" data-k="mid level intermediate focus plan" style="--accent:var(--teal)">
+    <h3><span class="tag">MID</span> What they test</h3>
+    <ul>
+      <li class="lead">Can you own a feature end to end without hand-holding?</li>
+      <li><b>Clean code:</b> SOLID applied, patterns used for a reason, testable design.</li>
+      <li><b>Data:</b> indexes, transactions, N+1, picking SQL vs NoSQL.</li>
+      <li><b>APIs:</b> REST design, idempotency, pagination, auth (OAuth/JWT).</li>
+      <li><b>Intro system design:</b> cache, queue, load balancer, and why each one is there.</li>
+      <li><b>Prod:</b> debugging, logs/metrics, CI/CD, safe deploys. <b>AI:</b> RAG, tool calling basics.</li>
+      <li class="note">Stories: a bug you chased, a feature you shipped, feedback you acted on.</li>
+    </ul>
+  </article>
+
+  <article class="card focus" data-lvl="s" data-cat="soft" data-k="senior staff focus plan" style="--accent:var(--teal)">
+    <h3><span class="tag">SENIOR</span> What they test</h3>
+    <ul>
+      <li class="lead">Can you make good tradeoffs, own ambiguity and lift the team?</li>
+      <li><b>System design depth:</b> scaling, caching, sharding, consistency, failure modes, back-of-envelope.</li>
+      <li><b>Distributed systems:</b> event-driven, delivery guarantees, sagas/outbox, observability, SLOs.</li>
+      <li><b>Architecture judgment:</b> monolith vs services, when <i>not</i> to use a pattern.</li>
+      <li><b>AI in production:</b> evals, cost/latency, guardrails, agents &amp; RAG quality.</li>
+      <li><b>Leadership:</b> mentoring, design reviews, incidents, pushing back with data.</li>
+      <li class="note">Coding still matters, but clarity and tests beat cleverness.</li>
+    </ul>
+  </article>
+
+  <article class="card focus" data-lvl="a" data-cat="soft arch" data-k="architect principal staff focus plan" style="--accent:var(--teal)">
+    <h3><span class="tag">ARCHITECT</span> What they test</h3>
+    <ul>
+      <li class="lead">Can you shape systems <i>and</i> organizations over years, not sprints?</li>
+      <li><b>Boundaries:</b> DDD, bounded contexts, integration styles, data ownership.</li>
+      <li><b>NFRs as design drivers:</b> availability, RTO/RPO, security, compliance, cost.</li>
+      <li><b>Evolution:</b> strangler fig, migrations, BC and versioning, tech-debt strategy.</li>
+      <li><b>Platform &amp; cloud:</b> multi-region, IaC, platform engineering, FinOps.</li>
+      <li><b>AI strategy:</b> build vs buy, model/vendor risk, governance, LLM gateway, eval culture.</li>
+      <li class="note">Communicate up and down: ADRs, diagrams, and the "why" for executives.</li>
+    </ul>
+  </article>
+
+  <article class="card" data-lvl="s a" data-cat="arch soft" data-k="architect toolkit adr architecture decision record c4 model nfr non functional requirements buy vs build conway tech radar fitness function" style="--accent:var(--green)">
+    <h3><span class="tag">ARCH</span> Architect's toolkit</h3>
+    <dl class="kv">
+      <dt>ADR</dt><dd>short record: context → decision → consequences</dd>
+      <dt>C4 model</dt><dd>diagrams at Context → Container → Component → Code</dd>
+      <dt>NFRs / "-ilities"</dt><dd>scalability, availability, security, maintainability, cost</dd>
+      <dt>Conway's law</dt><dd>systems mirror org structure; inverse Conway maneuver</dd>
+      <dt>Buy vs build</dt><dd>build only what differentiates you</dd>
+      <dt>Fitness functions</dt><dd>automated checks that architecture rules hold</dd>
+      <dt>Tech radar</dt><dd>adopt / trial / assess / hold</dd>
+      <dt>One-way doors</dt><dd>irreversible decisions deserve slow, deep review</dd>
+    </dl>
+  </article>
+
+  <!-- ================= LANGUAGES ================= -->
+  <article class="card" data-lvl="j m s" data-cat="lang" data-k="py python3 pythonic" style="--accent:var(--blue)">
+    <h3><span class="tag">LANG</span> Python</h3>
+    <pre><code>from collections import Counter, defaultdict, deque
+import heapq
+freq = Counter(words).most_common(3)
+g = defaultdict(list); g[u].append(v)
+q = deque([start]); q.popleft()          <span class="c"># O(1) queue</span>
+heapq.heappush(h, (prio, item))          <span class="c"># min-heap</span>
+pairs.sort(key=lambda p: (-p[1], p[0]))
+squares = [x*x for x in xs if x % 2]
+@dataclass(frozen=True)
+class Point: x: int; y: int</code></pre>
+    <ul>
+      <li><b>Idioms:</b> comprehensions, generators (<code>yield</code>) for lazy streams, <code>with</code> for context managers, <code>enumerate</code>/<code>zip</code>, f-strings.</li>
+      <li><b>Typing:</b> type hints + <code>mypy</code>/<code>pyright</code>; <code>Protocol</code> = structural interface.</li>
+      <li><b>Async:</b> <code>asyncio</code> event loop; <code>await asyncio.gather(*tasks)</code>.</li>
+      <li class="err">Gotchas: mutable default args (<code>def f(x=[])</code>), late-binding closures in loops, <code>is</code> vs <code>==</code>.</li>
+      <li><b>GIL:</b> threads for I/O, <code>multiprocessing</code> for CPU. Free-threaded builds (3.13+) are removing it.</li>
+    </ul>
+  </article>
+
+  <article class="card" data-lvl="j m s" data-cat="lang" data-k="js ts javascript typescript node nodejs deno bun browser ecmascript" style="--accent:var(--amber)">
+    <h3><span class="tag">LANG</span> JavaScript / TypeScript</h3>
+    <pre><code>const counts = new Map();
+for (const w of words) counts.set(w, (counts.get(w) ?? 0) + 1);
+const { id, ...rest } = user;              <span class="c">// destructure</span>
+const name = user?.profile?.name ?? "anon";
+const [a, b] = await Promise.all([fa(), fb()]);
+nums.sort((x, y) =&gt; x - y);               <span class="c">// default sort is lexicographic!</span>
+type Result&lt;T&gt; = { ok: true; value: T } | { ok: false; error: string };</code></pre>
+    <ul>
+      <li><b>Event loop:</b> call stack → <b>microtasks</b> (promises) drain first → then <b>macrotasks</b> (timers, I/O).</li>
+      <li><b><code>this</code></b> depends on call site; arrow functions capture lexical <code>this</code>.</li>
+      <li><b>TS:</b> structural typing, generics, union + narrowing, <code>unknown</code> over <code>any</code>, utility types (<code>Partial</code>, <code>Pick</code>, <code>Record</code>).</li>
+      <li class="err">Gotchas: <code>==</code> coercion (use <code>===</code>), <code>0.1+0.2 !== 0.3</code>, <code>var</code> hoisting, closures in loops (use <code>let</code>).</li>
+    </ul>
+  </article>
+
+  <article class="card" data-lvl="j m s" data-cat="lang" data-k="jvm java21 spring" style="--accent:var(--red)">
+    <h3><span class="tag">LANG</span> Java</h3>
+    <pre><code>Map&lt;String, Integer&gt; freq = new HashMap&lt;&gt;();
+for (var w : words) freq.merge(w, 1, Integer::sum);
+var top = freq.entrySet().stream()
+    .sorted(Map.Entry.&lt;String,Integer&gt;comparingByValue().reversed())
+    .limit(3).map(Map.Entry::getKey).toList();
+record Point(int x, int y) {}                <span class="c">// immutable data carrier</span>
+var pq = new PriorityQueue&lt;int[]&gt;((a, b) -&gt; a[0] - b[0]);
+try (var ex = Executors.newVirtualThreadPerTaskExecutor()) { ex.submit(task); }</code></pre>
+    <ul>
+      <li><b>Modern:</b> records, sealed interfaces, pattern matching in <code>switch</code>, <b>virtual threads</b> (21).</li>
+      <li><b>equals/hashCode contract</b> — override both or HashMap breaks.</li>
+      <li class="err">Gotchas: <code>Integer ==</code> only works in cache range (−128..127), type erasure on generics, checked vs unchecked exceptions.</li>
+      <li><b>JVM:</b> heap/stack, generational GC (G1, ZGC), JIT warm-up.</li>
+    </ul>
+  </article>
+
+  <article class="card" data-lvl="j m s" data-cat="lang conc" data-k="golang goroutine channel" style="--accent:var(--cyan)">
+    <h3><span class="tag">LANG</span> Go</h3>
+    <pre><code>freq := map[string]int{}
+for _, w := range words { freq[w]++ }
+results := make(chan int)
+var wg sync.WaitGroup
+for _, j := range jobs {
+    wg.Add(1)
+    go func() { defer wg.Done(); results &lt;- work(j) }()
+}
+go func() { wg.Wait(); close(results) }()
+if err != nil { return fmt.Errorf("load: %w", err) }</code></pre>
+    <ul>
+      <li><b>Errors are values</b>, wrap with <code>%w</code>, check with <code>errors.Is/As</code>.</li>
+      <li><b>Interfaces are implicit</b> (duck typing at compile time). Keep them small, define at consumer.</li>
+      <li><b>CSP:</b> "share memory by communicating". <code>select</code>, <code>context.Context</code> for cancel/timeout.</li>
+      <li class="err">Gotchas: nil-pointer-in-interface ≠ nil, slices share backing arrays, maps not goroutine-safe.</li>
+    </ul>
+  </article>
+
+  <article class="card" data-lvl="j m s" data-cat="lang" data-k="csharp c# dotnet .net linq" style="--accent:var(--violet)">
+    <h3><span class="tag">LANG</span> C# / .NET</h3>
+    <pre><code>var top = words.GroupBy(w =&gt; w)
+    .OrderByDescending(g =&gt; g.Count())
+    .Take(3).Select(g =&gt; g.Key).ToList();   <span class="c">// LINQ</span>
+public record Point(int X, int Y);
+var msg = shape switch {
+    Circle { R: &gt; 10 } =&gt; "big circle",
+    Circle c           =&gt; $"circle {c.R}",
+    _                  =&gt; "other" };
+await using var conn = await db.OpenAsync(ct);</code></pre>
+    <ul>
+      <li><b>async/await</b> on <code>Task</code>; pass <code>CancellationToken</code>.</li>
+      <li><b>Nullable reference types</b>, pattern matching, records, <code>Span&lt;T&gt;</code> for zero-copy.</li>
+      <li class="err">Gotchas: <code>async void</code> (only for event handlers), <code>.Result</code> deadlocks, <code>IEnumerable</code> deferred execution (enumerates twice).</li>
+      <li><b>struct vs class</b> = value vs reference semantics.</li>
+    </ul>
+  </article>
+
+  <article class="card" data-lvl="j m s" data-cat="lang conc" data-k="rustlang ownership borrow checker cargo" style="--accent:var(--amber)">
+    <h3><span class="tag">LANG</span> Rust</h3>
+    <pre><code>let mut freq: HashMap&lt;&amp;str, usize&gt; = HashMap::new();
+for w in &amp;words { *freq.entry(w).or_insert(0) += 1; }
+fn parse(s: &amp;str) -&gt; Result&lt;u32, ParseIntError&gt; {
+    let n = s.trim().parse::&lt;u32&gt;()?;           <span class="c">// ? propagates Err</span>
+    Ok(n * 2)
+}
+match shape { Shape::Circle(r) =&gt; area(r), Shape::Square(s) =&gt; s * s }
+let shared = Arc::new(Mutex::new(vec![]));</code></pre>
+    <ul>
+      <li><b>Ownership:</b> one owner; move by default; <b>borrow</b> <code>&amp;T</code> (many) XOR <code>&amp;mut T</code> (one).</li>
+      <li><b>No null, no exceptions:</b> <code>Option</code> / <code>Result</code> + exhaustive <code>match</code>.</li>
+      <li><b>Traits</b> = interfaces + generics (static dispatch) or <code>dyn Trait</code> (dynamic).</li>
+      <li><b>Fearless concurrency:</b> <code>Send</code>/<code>Sync</code> checked at compile time. <code>tokio</code> for async.</li>
+      <li class="note">String (owned) vs &amp;str (borrowed slice).</li>
+    </ul>
+  </article>
+
+  <article class="card" data-lvl="j m s" data-cat="lang" data-k="cpp c++ stl raii" style="--accent:var(--blue)">
+    <h3><span class="tag">LANG</span> C++</h3>
+    <pre><code>std::unordered_map&lt;std::string, int&gt; freq;
+for (auto&amp; w : words) ++freq[w];
+std::priority_queue&lt;int, std::vector&lt;int&gt;, std::greater&lt;&gt;&gt; minHeap;
+auto p = std::make_unique&lt;Widget&gt;();     <span class="c">// sole owner</span>
+auto s = std::make_shared&lt;Cache&gt;();      <span class="c">// ref-counted</span>
+std::ranges::sort(v, {}, &amp;User::age);</code></pre>
+    <ul>
+      <li><b>RAII:</b> resource lifetime = object lifetime; destructors release.</li>
+      <li><b>Move semantics</b> (<code>std::move</code>, rvalue refs) avoid copies. Rule of 0 / 3 / 5.</li>
+      <li><code>priority_queue</code> is a <b>max-heap</b> by default.</li>
+      <li class="err">Gotchas: undefined behavior, iterator invalidation on <code>vector</code> resize, dangling refs, <code>shared_ptr</code> cycles (use <code>weak_ptr</code>).</li>
+    </ul>
+  </article>
+
+  <article class="card" data-lvl="j m s" data-cat="lang" data-k="php8 php84 php85 laravel symfony" style="--accent:var(--violet)">
+    <h3><span class="tag">LANG</span> PHP 8.x</h3>
+    <pre><code>enum Status: string { case Paid = 'paid'; case Due = 'due'; }
+final class Money {
+    public function __construct(public readonly int $cents) {}
+}
+$label = match (true) { $n &lt; 0 =&gt; 'neg', $n === 0 =&gt; 'zero', default =&gt; 'pos' };
+$slug = $title |&gt; trim(...) |&gt; strtolower(...);   <span class="c">// 8.5 pipe</span></code></pre>
+    <ul>
+      <li><b>8.4:</b> property hooks, asymmetric visibility <code>public private(set)</code>, lazy objects, <code>array_find/any/all</code>.</li>
+      <li><b>8.5:</b> pipe operator <code>|&gt;</code>, clone-with, <code>#[\NoDiscard]</code>, <code>array_first/last</code>.</li>
+      <li class="err">Gotchas: <code>foreach(&amp;$v)</code> then reuse <code>$v</code>; <code>self</code> vs <code>static</code> (late static binding); never <code>unserialize()</code> untrusted input.</li>
+    </ul>
+  </article>
+
+  <article class="card" data-lvl="j m s" data-cat="lang algo" data-k="rosetta hashmap dictionary frequency count compare languages" style="--accent:var(--teal)">
+    <h3><span class="tag">ROSETTA</span> Same idea, many languages</h3>
+    <table>
+      <tr><th></th><th>Hash map</th><th>Min-heap</th><th>Dynamic array</th></tr>
+      <tr><td>Python</td><td><code>dict</code></td><td><code>heapq</code></td><td><code>list</code></td></tr>
+      <tr><td>JS/TS</td><td><code>Map</code></td><td>none (hand-roll)</td><td><code>Array</code></td></tr>
+      <tr><td>Java</td><td><code>HashMap</code></td><td><code>PriorityQueue</code></td><td><code>ArrayList</code></td></tr>
+      <tr><td>Go</td><td><code>map</code></td><td><code>container/heap</code></td><td>slice</td></tr>
+      <tr><td>C#</td><td><code>Dictionary</code></td><td><code>PriorityQueue</code></td><td><code>List&lt;T&gt;</code></td></tr>
+      <tr><td>Rust</td><td><code>HashMap</code></td><td><code>BinaryHeap</code>+<code>Reverse</code></td><td><code>Vec</code></td></tr>
+      <tr><td>C++</td><td><code>unordered_map</code></td><td><code>priority_queue</code>+<code>greater</code></td><td><code>vector</code></td></tr>
+    </table>
+  </article>
+
+  <article class="card" data-lvl="m s a" data-cat="lang conc" data-k="rosetta async threads concurrency model compare" style="--accent:var(--teal)">
+    <h3><span class="tag">ROSETTA</span> Concurrency models</h3>
+    <dl class="kv">
+      <dt>Python</dt><dd><code>asyncio</code> (single-thread loop), threads (I/O), processes (CPU)</dd>
+      <dt>JS/Node</dt><dd>single-threaded event loop + promises; worker threads for CPU</dd>
+      <dt>Java</dt><dd>OS threads, executors, <code>CompletableFuture</code>, <b>virtual threads</b></dd>
+      <dt>Go</dt><dd>goroutines (M:N scheduled) + channels (CSP)</dd>
+      <dt>C#</dt><dd>Task-based async/await on the thread pool</dd>
+      <dt>Rust</dt><dd>threads + ownership; async futures run by a runtime (tokio)</dd>
+      <dt>Erlang/Elixir</dt><dd>actors: isolated processes + message passing, "let it crash"</dd>
+    </dl>
+  </article>
+
+  <article class="card" data-lvl="j m s" data-cat="lang terms" data-k="paradigm typing static dynamic strong weak compiled interpreted jit garbage collection memory" style="--accent:var(--teal)">
+    <h3><span class="tag">LANG</span> Language concepts</h3>
+    <dl class="kv">
+      <dt>Paradigms</dt><dd>imperative · OOP · functional · declarative (SQL, HTML) · logic</dd>
+      <dt>Static vs dynamic</dt><dd>types checked at compile time vs runtime</dd>
+      <dt>Strong vs weak</dt><dd>no vs implicit coercion (<code>"1"+1</code>)</dd>
+      <dt>Nominal vs structural</dt><dd>Java/C# name-based vs TS/Go shape-based</dd>
+      <dt>Compiled / JIT</dt><dd>AOT to native (Go, Rust) vs bytecode + JIT (JVM, .NET, V8)</dd>
+      <dt>Memory</dt><dd>GC (tracing / ref-count) vs ownership (Rust) vs manual (C)</dd>
+      <dt>Value vs reference</dt><dd>copy on assign vs share pointer; pass-by-sharing</dd>
+      <dt>Stack vs heap</dt><dd>fast, scoped, fixed-size vs dynamic, longer-lived</dd>
+      <dt>Closure</dt><dd>function + captured lexical environment</dd>
+      <dt>Generics</dt><dd>reified (C#) vs erased (Java) vs monomorphized (Rust, C++)</dd>
+    </dl>
+  </article>
+
+  <!-- ================= OOP ================= -->
+  <article class="card" data-lvl="j m" data-cat="oop" data-k="encapsulation abstraction inheritance polymorphism pillars" style="--accent:var(--blue)">
+    <h3><span class="tag">OOP</span> Four pillars</h3>
+    <ul>
+      <li><b>Encapsulation</b>: hide state behind behavior; invariants enforced in one place.</li>
+      <li><b>Abstraction</b>: expose <i>what</i>, hide <i>how</i> (interfaces, public API).</li>
+      <li><b>Inheritance</b>: "is-a" reuse. Deep trees = <b>fragile base class</b>.</li>
+      <li><b>Polymorphism</b>: one interface, many forms. <b>Subtype</b> (override), <b>parametric</b> (generics), <b>ad-hoc</b> (overload).</li>
+      <li class="note">Senior signal: say where each one bites you, not just the definition.</li>
+    </ul>
+  </article>
+
+  <article class="card" data-lvl="j m s" data-cat="oop patterns" data-k="composition over inheritance has-a is-a delegation" style="--accent:var(--blue)">
+    <h3><span class="tag">OOP</span> Composition over inheritance</h3>
+    <pre><code><span class="c">// inheritance: behavior locked in at compile time</span>
+class LoggingRepo extends SqlRepo { ... }
+<span class="c">// composition: behavior injected, swappable, testable</span>
+class OrderService {
+  constructor(private repo: Repo, private log: Logger) {}
+  place(o: Order) { this.repo.save(o); this.log.info("placed", o.id); }
+}</code></pre>
+    <ul>
+      <li>Prefer <b>has-a</b> + interfaces; inherit only for true <b>is-a</b> that honors Liskov.</li>
+      <li>Composition enables Strategy, Decorator and DI naturally.</li>
+    </ul>
+  </article>
+
+  <article class="card" data-lvl="j m" data-cat="oop" data-k="interface abstract class trait mixin overload override dispatch" style="--accent:var(--blue)">
+    <h3><span class="tag">OOP</span> Interface vs abstract class &amp; friends</h3>
+    <dl class="kv">
+      <dt>Interface</dt><dd>contract only (may have default methods); multiple allowed</dd>
+      <dt>Abstract class</dt><dd>partial implementation + state; single inheritance</dd>
+      <dt>Trait / mixin</dt><dd>reusable behavior bundle, horizontal reuse</dd>
+      <dt>Overload</dt><dd>same name, different params: <b>compile-time</b></dd>
+      <dt>Override</dt><dd>subclass replaces method: <b>runtime</b> (dynamic dispatch)</dd>
+      <dt>Static dispatch</dt><dd>resolved at compile time (generics, templates) — faster, inlinable</dd>
+      <dt>Diamond problem</dt><dd>multiple inheritance ambiguity; solved by interfaces/MRO</dd>
+    </dl>
+  </article>
+
+  <article class="card" data-lvl="m s a" data-cat="oop solid patterns" data-k="dependency inversion injection ioc container inversion of control service locator" style="--accent:var(--blue)">
+    <h3><span class="tag">KEY</span> DIP vs DI vs IoC container</h3>
+    <ul>
+      <li><b>DIP</b> = the <b>principle</b> (depend on abstractions).</li>
+      <li><b>DI</b> = the <b>technique</b> (pass deps in, usually via constructor).</li>
+      <li><b>Container</b> = the <b>tool</b> (Spring, .NET DI, Guice, NestJS resolve them).</li>
+      <li><span class="err">Anti-pattern:</span> <b>Service Locator</b> (<code>Container.get(X)</code> inside business code) hides deps and breaks tests.</li>
+      <li class="note">Separating these three cleanly is a senior signal.</li>
+    </ul>
+  </article>
+
+  <article class="card" data-lvl="m s a" data-cat="oop solid" data-k="coupling cohesion demeter tell dont ask grasp" style="--accent:var(--blue)">
+    <h3><span class="tag">OOP</span> Coupling, cohesion, Demeter</h3>
+    <ul>
+      <li><b>Low coupling</b> between modules, <b>high cohesion</b> within them.</li>
+      <li><b>Law of Demeter:</b> talk to friends only. No <code>a.getB().getC().do()</code> train wrecks.</li>
+      <li><b>Tell, don't ask:</b> <code>account.withdraw(x)</code>, not <code>if (acc.balance &gt; x) acc.balance -= x</code>.</li>
+      <li><b>Anemic domain model:</b> data bags + logic in services. OK for CRUD, smell for rich domains.</li>
+    </ul>
+  </article>
+
+  <!-- ================= SOLID & PRINCIPLES ================= -->
+  <article class="card" data-lvl="j m s a" data-cat="solid oop" data-k="srp ocp lsp isp dip single responsibility open closed liskov substitution interface segregation dependency inversion" style="--accent:var(--red)">
+    <h3><span class="tag">SOLID</span> The five</h3>
+    <ul>
+      <li><b>S</b>ingle Responsibility: one <b>reason to change</b> (one actor). <code>Invoice</code> ≠ <code>InvoicePrinter</code> ≠ <code>InvoiceRepo</code>.</li>
+      <li><b>O</b>pen/Closed: add behavior by <b>adding code</b> (new Strategy/plugin), not editing tested code.</li>
+      <li><b>L</b>iskov: subtypes must honor the contract. Classic break: <code>Square extends Rectangle</code> (setWidth changes height).</li>
+      <li><b>I</b>nterface Segregation: many small interfaces &gt; one fat one. No <code>Printer.fax()</code> throwing <code>NotSupported</code>.</li>
+      <li><b>D</b>ependency Inversion: high-level policy and low-level details both depend on <b>abstractions</b>.</li>
+    </ul>
+  </article>
+
+  <article class="card" data-lvl="j m" data-cat="solid" data-k="ocp open closed strategy example" style="--accent:var(--red)">
+    <h3><span class="tag">SOLID</span> OCP in 8 lines</h3>
+    <pre><code><span class="c"># closed: every new type edits this function</span>
+def price(kind, base):
+    if kind == "vip": return base * 0.8
+    if kind == "sale": return base * 0.5
+<span class="c"># open: new behavior = new class, zero edits</span>
+class Discount(Protocol):
+    def apply(self, base: float) -&gt; float: ...
+def price(d: Discount, base): return d.apply(base)</code></pre>
+  </article>
+
+  <article class="card" data-lvl="j m s" data-cat="solid" data-k="dry kiss yagni soc separation of concerns least astonishment fail fast boy scout aha" style="--accent:var(--red)">
+    <h3><span class="tag">PRINCIPLES</span> Beyond SOLID</h3>
+    <dl class="kv">
+      <dt>DRY</dt><dd>one source of truth for <b>knowledge</b>, not for similar-looking code</dd>
+      <dt>AHA / WET</dt><dd>avoid hasty abstractions; duplicate twice, abstract on the third</dd>
+      <dt>KISS</dt><dd>simplest thing that works</dd>
+      <dt>YAGNI</dt><dd>don't build for imagined requirements</dd>
+      <dt>SoC</dt><dd>separation of concerns (UI / domain / infra)</dd>
+      <dt>POLA</dt><dd>principle of least astonishment</dd>
+      <dt>Fail fast</dt><dd>validate at boundaries, crash loudly on broken invariants</dd>
+      <dt>Boy Scout</dt><dd>leave code cleaner than you found it</dd>
+      <dt>CoC</dt><dd>convention over configuration (Rails, Spring Boot)</dd>
+    </dl>
+  </article>
+
+  <article class="card" data-lvl="m s" data-cat="solid patterns" data-k="code smells refactoring god class long method feature envy shotgun surgery primitive obsession" style="--accent:var(--red)">
+    <h3><span class="tag">SMELLS</span> Code smells → refactor</h3>
+    <dl class="kv">
+      <dt>Long method</dt><dd>Extract Method</dd>
+      <dt>God class</dt><dd>Extract Class by responsibility</dd>
+      <dt>Feature envy</dt><dd>Move Method to the data it uses</dd>
+      <dt>Shotgun surgery</dt><dd>one change → many files; consolidate</dd>
+      <dt>Primitive obsession</dt><dd>Value Object (<code>Email</code>, <code>Money</code>)</dd>
+      <dt>Switch on type</dt><dd>Replace Conditional with Polymorphism</dd>
+      <dt>Long param list</dt><dd>Parameter Object / Builder</dd>
+      <dt>Magic numbers</dt><dd>named constants / enums</dd>
+    </dl>
+  </article>
+
+  <!-- ================= PATTERNS ================= -->
+  <article class="card" data-lvl="j m s" data-cat="patterns" data-k="gof creational factory abstract factory builder singleton prototype" style="--accent:var(--violet)">
+    <h3><span class="tag">GoF</span> Creational</h3>
+    <ul>
+      <li><b>Factory Method</b>: subclass/function decides which concrete to create.</li>
+      <li><b>Abstract Factory</b>: families of related objects (UI kit per OS, driver per cloud).</li>
+      <li><b>Builder</b>: step-by-step construction of complex/immutable objects; fluent API.</li>
+      <li><b>Prototype</b>: clone an existing instance.</li>
+      <li><b>Singleton</b>: one instance. <span class="err">Often an anti-pattern</span> (global state, hidden deps). Prefer a DI-scoped singleton.</li>
+    </ul>
+  </article>
+
+  <article class="card" data-lvl="j m s" data-cat="patterns" data-k="gof structural adapter decorator facade proxy composite bridge flyweight" style="--accent:var(--violet)">
+    <h3><span class="tag">GoF</span> Structural</h3>
+    <ul>
+      <li><b>Adapter</b>: convert one interface to another (wrap a 3rd-party SDK).</li>
+      <li><b>Decorator</b>: wrap to add behavior, same interface (caching, logging, retry).</li>
+      <li><b>Facade</b>: simple front for a complex subsystem.</li>
+      <li><b>Proxy</b>: same interface, controls access (lazy load, remote, auth).</li>
+      <li><b>Composite</b>: tree where leaf and group share an interface (UI, file system).</li>
+      <li><b>Bridge</b>: split abstraction from implementation so both vary.</li>
+      <li><b>Flyweight</b>: share immutable intrinsic state (glyphs, tiles).</li>
+    </ul>
+  </article>
+
+  <article class="card" data-lvl="j m s" data-cat="patterns" data-k="gof behavioral strategy observer command state template method chain of responsibility iterator visitor mediator memento" style="--accent:var(--violet)">
+    <h3><span class="tag">GoF</span> Behavioral</h3>
+    <ul>
+      <li><b>Strategy</b>: swap algorithms behind an interface (payment, pricing, routing).</li>
+      <li><b>Observer</b>: subscribers notified on change (events, reactive UIs).</li>
+      <li><b>Command</b>: request as an object → queue, undo, audit log.</li>
+      <li><b>State</b>: behavior changes with internal state (order lifecycle FSM).</li>
+      <li><b>Template Method</b>: base defines skeleton, subclasses fill steps.</li>
+      <li><b>Chain of Responsibility</b>: pass along handlers (HTTP middleware).</li>
+      <li><b>Iterator · Visitor · Mediator · Memento</b>: traverse · add ops to a tree · centralize comms · snapshot state.</li>
+    </ul>
+  </article>
+
+  <article class="card" data-lvl="j m s" data-cat="patterns" data-k="decorator retry example python wrapper" style="--accent:var(--violet)">
+    <h3><span class="tag">PATTERN</span> Decorator + Strategy, live</h3>
+    <pre><code>class CachedRepo(Repo):                 <span class="c"># Decorator</span>
+    def __init__(self, inner: Repo, cache):
+        self.inner, self.cache = inner, cache
+    def get(self, id):
+        if (hit := self.cache.get(id)) is not None: return hit
+        v = self.inner.get(id); self.cache[id] = v; return v
+
+strategies = {"card": pay_card, "paypal": pay_pp}   <span class="c"># Strategy</span>
+strategies[method](amount)</code></pre>
+    <ul><li class="note">In functional languages, Strategy is just "pass a function".</li></ul>
+  </article>
+
+  <article class="card" data-lvl="m s a" data-cat="patterns" data-k="which pattern choose picker when to use" style="--accent:var(--violet)">
+    <h3><span class="tag">PICK</span> "I need to…" → pattern</h3>
+    <dl class="kv">
+      <dt>swap algorithm at runtime</dt><dd>Strategy</dd>
+      <dt>add behavior w/o subclassing</dt><dd>Decorator</dd>
+      <dt>tame an ugly API</dt><dd>Adapter / Facade</dd>
+      <dt>react to something happening</dt><dd>Observer / Pub-Sub</dd>
+      <dt>undo / queue actions</dt><dd>Command</dd>
+      <dt>complex object creation</dt><dd>Builder / Factory</dd>
+      <dt>lifecycle with rules</dt><dd>State machine</dd>
+      <dt>pipeline of handlers</dt><dd>Chain of Responsibility / middleware</dd>
+      <dt>treat one &amp; many alike</dt><dd>Composite</dd>
+    </dl>
+  </article>
+
+  <article class="card" data-lvl="m s" data-cat="patterns" data-k="functional programming fp pure immutable higher order map filter reduce monad currying" style="--accent:var(--violet)">
+    <h3><span class="tag">FP</span> Functional patterns</h3>
+    <ul>
+      <li><b>Pure functions</b> + <b>immutability</b> → easy tests, safe concurrency.</li>
+      <li><b>Higher-order</b>: functions in/out; <code>map/filter/reduce</code>.</li>
+      <li><b>Currying / partial application</b>, function composition, pipelines.</li>
+      <li><b>Option / Result</b> (a.k.a. Maybe / Either) replace null &amp; exceptions; "monad" = chainable wrapper with <code>flatMap</code>.</li>
+      <li><b>Algebraic data types</b> + exhaustive pattern matching.</li>
+      <li><b>Functional core, imperative shell</b>: pure logic inside, I/O at the edges.</li>
+    </ul>
+  </article>
+
+  <article class="card" data-lvl="s a" data-cat="patterns arch" data-k="anti-patterns god object golden hammer premature optimization distributed monolith big ball of mud" style="--accent:var(--violet)">
+    <h3><span class="tag">ANTI</span> Anti-patterns</h3>
+    <ul>
+      <li><b>God object</b>, <b>big ball of mud</b>, <b>spaghetti</b> code.</li>
+      <li><b>Golden hammer</b>: one tool for everything ("just add Kafka").</li>
+      <li><b>Premature optimization</b> / premature abstraction.</li>
+      <li><b>Distributed monolith</b>: microservices that must deploy together.</li>
+      <li><b>Shared database</b> across services = hidden coupling.</li>
+      <li><b>Magic / action at a distance</b>: global state, hidden side effects.</li>
+    </ul>
+  </article>
+
+  <!-- ================= ARCHITECTURE ================= -->
+  <article class="card" data-lvl="m s a" data-cat="arch" data-k="monolith modular monolith microservices serverless tradeoffs" style="--accent:var(--green)">
+    <h3><span class="tag">ARCH</span> Monolith ↔ Microservices</h3>
+    <table>
+      <tr><th></th><th>Win</th><th>Cost</th></tr>
+      <tr><td>Monolith</td><td>simple deploy, local calls, ACID</td><td>scales as one, team contention</td></tr>
+      <tr><td>Modular mono</td><td>enforced module boundaries, one deploy</td><td>discipline required</td></tr>
+      <tr><td>Microservices</td><td>independent deploy/scale, team autonomy</td><td>network, distributed txns, ops overhead</td></tr>
+      <tr><td>Serverless</td><td>zero ops, pay per call</td><td>cold starts, limits, lock-in</td></tr>
+    </table>
+    <ul><li class="note">Start modular monolith; split along <b>bounded contexts</b> when team or scale forces it (Conway's law).</li></ul>
+  </article>
+
+  <article class="card" data-lvl="s a" data-cat="arch solid" data-k="clean architecture hexagonal ports adapters onion layered dependency rule" style="--accent:var(--green)">
+    <h3><span class="tag">ARCH</span> Clean / Hexagonal / Onion</h3>
+    <ul>
+      <li><b>Dependency rule:</b> source deps point <b>inward</b>. Domain knows nothing of DB, HTTP or frameworks.</li>
+      <li><b>Ports</b> = interfaces the core owns (<code>OrderRepo</code>, <code>PaymentGateway</code>).</li>
+      <li><b>Adapters</b> = implementations at the edge (Postgres repo, Stripe client, REST controller).</li>
+      <li>Layers: <b>Entities → Use cases → Interface adapters → Frameworks</b>.</li>
+      <li>Payoff: swap infra, unit-test core without mocks of the world.</li>
+    </ul>
+  </article>
+
+  <article class="card" data-lvl="s a" data-cat="arch" data-k="ddd domain driven design bounded context aggregate entity value object ubiquitous language anti corruption layer" style="--accent:var(--green)">
+    <h3><span class="tag">DDD</span> Domain-Driven Design</h3>
+    <dl class="kv">
+      <dt>Ubiquitous lang.</dt><dd>code uses the business's words</dd>
+      <dt>Bounded context</dt><dd>boundary where a model is consistent (≈ service boundary)</dd>
+      <dt>Entity</dt><dd>identity over time (<code>Order#42</code>)</dd>
+      <dt>Value object</dt><dd>defined by values, immutable (<code>Money</code>, <code>Address</code>)</dd>
+      <dt>Aggregate</dt><dd>consistency boundary; one root; one txn per aggregate</dd>
+      <dt>Domain event</dt><dd>"something happened" (<code>OrderPlaced</code>)</dd>
+      <dt>ACL</dt><dd>anti-corruption layer translating a foreign model</dd>
+      <dt>Context map</dt><dd>how contexts relate (upstream/downstream, shared kernel)</dd>
+    </dl>
+  </article>
+
+  <article class="card" data-lvl="s a" data-cat="arch events" data-k="cqrs event sourcing command query responsibility segregation projection read model replay" style="--accent:var(--green)">
+    <h3><span class="tag">ARCH</span> CQRS &amp; Event Sourcing</h3>
+    <ul>
+      <li><b>CQRS</b>: separate write model (commands, validation) from read models (denormalized, fast queries).</li>
+      <li><b>Event Sourcing</b>: store <b>events</b>, not current state. State = <code>fold(events)</code>.</li>
+      <li>Gains: full audit log, time travel, rebuild new projections by <b>replay</b>.</li>
+      <li>Costs: eventual consistency of reads, event schema versioning, snapshots needed for long streams.</li>
+      <li class="note">Use them independently; neither requires the other.</li>
+    </ul>
+  </article>
+
+  <article class="card" data-lvl="s a" data-cat="arch cloud" data-k="api gateway bff backend for frontend service mesh sidecar strangler fig service discovery database per service" style="--accent:var(--green)">
+    <h3><span class="tag">ARCH</span> Microservice patterns</h3>
+    <dl class="kv">
+      <dt>API Gateway</dt><dd>single entry: routing, auth, rate limit, TLS</dd>
+      <dt>BFF</dt><dd>backend-for-frontend, one per client type</dd>
+      <dt>Service mesh</dt><dd>sidecar proxies (Envoy/Istio/Linkerd): mTLS, retries, telemetry</dd>
+      <dt>Strangler fig</dt><dd>incrementally replace legacy behind a facade</dd>
+      <dt>DB per service</dt><dd>own your data; share via APIs/events</dd>
+      <dt>Service discovery</dt><dd>registry / DNS (Consul, K8s Services)</dd>
+      <dt>Bulkhead</dt><dd>isolate resource pools so one failure doesn't sink all</dd>
+      <dt>Circuit breaker</dt><dd>closed → open → half-open; fail fast</dd>
+    </dl>
+  </article>
+
+  <!-- ================= EVENT-DRIVEN ================= -->
+  <article class="card" data-lvl="m s a" data-cat="events arch" data-k="eda event driven architecture event command message pub sub queue choreography orchestration" style="--accent:var(--pink)">
+    <h3><span class="tag">EDA</span> Event-driven basics</h3>
+    <ul>
+      <li><b>Event</b> = fact, past tense, many listeners (<code>PaymentCaptured</code>). <b>Command</b> = intent, one handler (<code>CapturePayment</code>).</li>
+      <li><b>Queue</b> (point-to-point): each message to one consumer; work distribution.</li>
+      <li><b>Pub/Sub / topic</b>: each subscriber gets a copy; fan-out.</li>
+      <li><b>Choreography</b>: services react to each other's events (loose, harder to trace).</li>
+      <li><b>Orchestration</b>: a coordinator tells services what to do (explicit, central).</li>
+      <li>Event types: <b>notification</b> (thin, "go fetch") vs <b>event-carried state transfer</b> (fat payload).</li>
+    </ul>
+  </article>
+
+  <article class="card" data-lvl="m s a" data-cat="events sysdesign" data-k="kafka rabbitmq sqs queue delivery semantics at least once exactly once at most once idempotency dedupe ordering dlq dead letter retry backoff jitter poison" style="--accent:var(--pink)">
+    <h3><span class="tag">EDA</span> Delivery guarantees</h3>
+    <ul>
+      <li><b>At-most-once</b> (may lose) · <b>At-least-once</b> (may duplicate) · <b>Exactly-once</b> ≈ at-least-once + <b>idempotent consumer</b>.</li>
+      <li><b>Idempotency key</b>: store processed IDs; dedupe on retry. No double charges.</li>
+      <li><b>Ordering</b> only within a partition/key: route by <code>orderId</code>.</li>
+      <li><b>Retries</b>: exponential backoff + <b>jitter</b>, capped; then <b>DLQ</b>.</li>
+      <li><b>Poison message</b>: always fails → blocks partition unless moved to DLQ.</li>
+    </ul>
+    <pre><code>def handle(msg):
+    if store.seen(msg.id): return          <span class="c"># idempotent</span>
+    with tx: apply(msg); store.mark(msg.id)</code></pre>
+  </article>
+
+  <article class="card" data-lvl="s a" data-cat="events arch data" data-k="outbox inbox cdc change data capture debezium saga compensating dual write" style="--accent:var(--pink)">
+    <h3><span class="tag">EDA</span> Outbox, CDC, Saga</h3>
+    <ul>
+      <li class="err">Dual-write problem: save to DB <i>and</i> publish to broker. One can fail.</li>
+      <li><b>Transactional Outbox</b>: write event to an <code>outbox</code> table in the <b>same txn</b>; relay publishes it.</li>
+      <li><b>CDC</b>: tail the DB log (Debezium) → stream changes as events.</li>
+      <li><b>Inbox</b>: consumer-side dedupe table.</li>
+      <li><b>Saga</b>: long-running distributed txn = local txns + <b>compensating actions</b> (refund, release stock). No 2PC.</li>
+    </ul>
+  </article>
+
+  <article class="card" data-lvl="m s a" data-cat="events cloud" data-k="kafka rabbitmq sqs sns pubsub eventbridge nats redis streams broker compare partitions consumer group" style="--accent:var(--pink)">
+    <h3><span class="tag">EDA</span> Brokers compared</h3>
+    <dl class="kv">
+      <dt>Kafka</dt><dd>distributed <b>log</b>; partitions, consumer groups, offsets, retention + <b>replay</b>; high throughput</dd>
+      <dt>RabbitMQ</dt><dd>smart broker; exchanges + routing keys; per-message ack; task queues</dd>
+      <dt>SQS / SNS</dt><dd>managed queue / fan-out topic (AWS); FIFO variant</dd>
+      <dt>Pub/Sub</dt><dd>GCP managed pub/sub; push or pull</dd>
+      <dt>EventBridge</dt><dd>event bus with rules/filters, SaaS integrations</dd>
+      <dt>NATS / Redis Streams</dt><dd>lightweight, low-latency messaging</dd>
+    </dl>
+    <ul><li class="note">Kafka: parallelism ≤ #partitions per consumer group.</li></ul>
+  </article>
+
+  <article class="card" data-lvl="s a" data-cat="events data" data-k="stream processing window tumbling sliding session watermark backpressure lambda kappa flink spark" style="--accent:var(--pink)">
+    <h3><span class="tag">STREAM</span> Stream processing</h3>
+    <ul>
+      <li><b>Batch</b> (bounded, high latency) vs <b>stream</b> (unbounded, low latency).</li>
+      <li>Windows: <b>tumbling</b> (fixed, no overlap) · <b>sliding</b> (overlap) · <b>session</b> (gap-based).</li>
+      <li><b>Event time vs processing time</b>; <b>watermarks</b> handle late data.</li>
+      <li><b>Backpressure</b>: slow consumer signals producer to slow down.</li>
+      <li><b>Lambda</b> (batch + speed layers) vs <b>Kappa</b> (stream only, replay the log).</li>
+      <li>Tools: Flink, Kafka Streams, Spark Structured Streaming, Beam.</li>
+    </ul>
+  </article>
+
+  <!-- ================= CLOUD ================= -->
+  <article class="card" data-lvl="j m s a" data-cat="cloud" data-k="iaas paas saas faas caas shared responsibility region availability zone" style="--accent:var(--cyan)">
+    <h3><span class="tag">CLOUD</span> Service models</h3>
+    <dl class="kv">
+      <dt>IaaS</dt><dd>VMs, networks, disks (EC2, Compute Engine)</dd>
+      <dt>CaaS</dt><dd>managed containers (EKS, GKE, AKS, Cloud Run, Fargate)</dd>
+      <dt>PaaS</dt><dd>push code, platform runs it (App Engine, Heroku, App Service)</dd>
+      <dt>FaaS</dt><dd>functions on events (Lambda, Cloud Functions)</dd>
+      <dt>SaaS</dt><dd>finished product (Gmail, Salesforce)</dd>
+    </dl>
+    <ul>
+      <li><b>Shared responsibility:</b> provider secures the cloud, you secure what's <i>in</i> it (IAM, data, config).</li>
+      <li><b>Region</b> ⊃ <b>Availability Zones</b> (isolated DCs). Multi-AZ for HA, multi-region for DR.</li>
+    </ul>
+  </article>
+
+  <article class="card" data-lvl="m s a" data-cat="cloud" data-k="aws gcp azure mapping equivalent services s3 ec2 lambda dynamodb" style="--accent:var(--cyan)">
+    <h3><span class="tag">CLOUD</span> AWS · GCP · Azure</h3>
+    <table>
+      <tr><th>Need</th><th>AWS</th><th>GCP</th><th>Azure</th></tr>
+      <tr><td>VM</td><td>EC2</td><td>Compute Engine</td><td>Virtual Machines</td></tr>
+      <tr><td>Functions</td><td>Lambda</td><td>Cloud Functions</td><td>Functions</td></tr>
+      <tr><td>K8s</td><td>EKS</td><td>GKE</td><td>AKS</td></tr>
+      <tr><td>Containers</td><td>Fargate / App Runner</td><td>Cloud Run</td><td>Container Apps</td></tr>
+      <tr><td>Object</td><td>S3</td><td>Cloud Storage</td><td>Blob Storage</td></tr>
+      <tr><td>SQL</td><td>RDS / Aurora</td><td>Cloud SQL / Spanner</td><td>Azure SQL</td></tr>
+      <tr><td>NoSQL</td><td>DynamoDB</td><td>Firestore / Bigtable</td><td>Cosmos DB</td></tr>
+      <tr><td>Queue</td><td>SQS</td><td>Pub/Sub</td><td>Service Bus</td></tr>
+      <tr><td>CDN</td><td>CloudFront</td><td>Cloud CDN</td><td>Front Door</td></tr>
+      <tr><td>Warehouse</td><td>Redshift</td><td>BigQuery</td><td>Synapse / Fabric</td></tr>
+      <tr><td>AI</td><td>Bedrock / SageMaker</td><td>Vertex AI</td><td>Azure AI Foundry</td></tr>
+    </table>
+  </article>
+
+  <article class="card" data-lvl="m s a" data-cat="cloud ops arch" data-k="twelve factor 12factor app config env stateless disposable" style="--accent:var(--cyan)">
+    <h3><span class="tag">CLOUD</span> 12-Factor app (short)</h3>
+    <ul>
+      <li>One codebase, many deploys · <b>explicit deps</b> · <b>config in env</b>.</li>
+      <li>Backing services as attached resources · strict <b>build → release → run</b>.</li>
+      <li><b>Stateless processes</b> · port binding · scale out via processes.</li>
+      <li><b>Disposability</b>: fast start, graceful shutdown · dev/prod parity.</li>
+      <li><b>Logs as event streams</b> (stdout) · admin tasks as one-off processes.</li>
+    </ul>
+  </article>
+
+  <article class="card" data-lvl="m s a" data-cat="cloud ops" data-k="kubernetes k8s docker container pod deployment service ingress configmap secret hpa probe statefulset daemonset helm" style="--accent:var(--cyan)">
+    <h3><span class="tag">K8S</span> Containers &amp; Kubernetes</h3>
+    <dl class="kv">
+      <dt>Image / container</dt><dd>immutable template / running instance (namespaces + cgroups)</dd>
+      <dt>Pod</dt><dd>smallest unit; 1+ containers sharing network</dd>
+      <dt>Deployment</dt><dd>desired replicas + rolling updates</dd>
+      <dt>Service</dt><dd>stable virtual IP / DNS for pods</dd>
+      <dt>Ingress / Gateway</dt><dd>L7 HTTP routing into the cluster</dd>
+      <dt>ConfigMap / Secret</dt><dd>config / sensitive config</dd>
+      <dt>HPA</dt><dd>autoscale on CPU / custom metrics</dd>
+      <dt>Liveness vs readiness</dt><dd>restart me vs don't send me traffic yet</dd>
+      <dt>StatefulSet</dt><dd>stable identity + storage (DBs)</dd>
+      <dt>DaemonSet</dt><dd>one pod per node (log agents)</dd>
+      <dt>Helm / Kustomize</dt><dd>packaging / overlays for manifests</dd>
+    </dl>
+    <ul><li class="note">K8s is a <b>reconciliation loop</b>: desired state vs actual state.</li></ul>
+  </article>
+
+  <article class="card" data-lvl="m s a" data-cat="cloud arch" data-k="serverless lambda cold start function faas edge" style="--accent:var(--cyan)">
+    <h3><span class="tag">CLOUD</span> Serverless</h3>
+    <ul>
+      <li>Event-triggered, auto-scaled, <b>pay per invocation</b>, scale to zero.</li>
+      <li class="err">Cold starts, execution time limits, concurrency caps, harder local debugging.</li>
+      <li>Must be <b>stateless</b>; state lives in DB / object store / cache.</li>
+      <li>Watch: DB connection storms (use proxies/pools), fan-out cost surprises.</li>
+      <li><b>Edge functions</b> (Cloudflare Workers, Vercel/Lambda@Edge): run close to the user.</li>
+    </ul>
+  </article>
+
+  <article class="card" data-lvl="s a" data-cat="cloud ops" data-k="iac infrastructure as code terraform opentofu pulumi cdk cloudformation ansible gitops argocd flux immutable pets cattle" style="--accent:var(--cyan)">
+    <h3><span class="tag">IaC</span> Infra as Code &amp; GitOps</h3>
+    <ul>
+      <li><b>Terraform/OpenTofu</b>: declarative HCL, <b>state file</b>, <code>plan</code> → <code>apply</code>, detect <b>drift</b>.</li>
+      <li><b>Pulumi / CDK</b>: IaC in real languages. <b>CloudFormation / Bicep</b>: native.</li>
+      <li><b>Ansible</b>: config management (mutable, procedural).</li>
+      <li><b>GitOps</b> (Argo CD, Flux): Git is the source of truth; controller syncs cluster to repo.</li>
+      <li><b>Immutable infra</b>: replace, don't patch. <b>Cattle, not pets.</b></li>
+    </ul>
+  </article>
+
+  <article class="card" data-lvl="s a" data-cat="cloud sysdesign ops" data-k="high availability disaster recovery rto rpo multi region active active passive failover chaos engineering" style="--accent:var(--cyan)">
+    <h3><span class="tag">CLOUD</span> HA &amp; Disaster Recovery</h3>
+    <ul>
+      <li><b>RTO</b> = how long to recover. <b>RPO</b> = how much data you can lose.</li>
+      <li>DR tiers: backup/restore → pilot light → warm standby → <b>active-active</b> (cost ↑, RTO ↓).</li>
+      <li><b>Availability math:</b> 99.9% ≈ 8.8 h/yr · 99.99% ≈ 53 min/yr. Serial deps multiply (0.99×0.99 = 0.98).</li>
+      <li>No single points of failure; health checks + automatic failover.</li>
+      <li><b>Chaos engineering</b>: inject failure deliberately to prove resilience.</li>
+      <li><b>FinOps:</b> spot/preemptible, reserved/savings plans, right-size, watch <b>egress</b> costs, tag everything.</li>
+    </ul>
+  </article>
+
+  <!-- ================= SYSTEM DESIGN ================= -->
+  <article class="card" data-lvl="m s a" data-cat="sysdesign soft" data-k="system design interview framework approach steps requirements" style="--accent:var(--lime)">
+    <h3><span class="tag">SD</span> The interview loop</h3>
+    <ul>
+      <li><b>1 Requirements</b>: functional + non-functional (scale, latency, consistency, availability).</li>
+      <li><b>2 Estimate</b>: QPS, storage, bandwidth, read:write ratio.</li>
+      <li><b>3 API</b>: key endpoints / events.</li>
+      <li><b>4 Data model</b>: entities, access patterns → store choice.</li>
+      <li><b>5 High-level</b>: clients → LB → services → cache → DB → queue.</li>
+      <li><b>6 Deep dive</b>: the hardest part (hot keys, fan-out, consistency).</li>
+      <li><b>7 Bottlenecks &amp; tradeoffs</b>: SPOFs, scaling, monitoring, failure modes.</li>
+      <li class="note">Drive the conversation. State assumptions out loud.</li>
+    </ul>
+  </article>
+
+  <article class="card" data-lvl="m s a" data-cat="sysdesign" data-k="latency numbers back of envelope estimation capacity qps storage" style="--accent:var(--lime)">
+    <h3><span class="tag">SD</span> Numbers &amp; napkin math</h3>
+    <dl class="kv">
+      <dt>L1 / RAM</dt><dd>~1 ns / ~100 ns</dd>
+      <dt>SSD random read</dt><dd>~100 µs</dd>
+      <dt>Same-DC round trip</dt><dd>~0.5 ms</dd>
+      <dt>Cross-continent</dt><dd>~150 ms</dd>
+      <dt>1 day</dt><dd>86,400 s ≈ 10<sup>5</sup> s</dd>
+      <dt>1M req/day</dt><dd>≈ 12 req/s (peak ×2–10)</dd>
+      <dt>100M DAU × 10 req</dt><dd>≈ 12k QPS avg</dd>
+      <dt>Powers</dt><dd>2<sup>10</sup>≈10<sup>3</sup> KB · 2<sup>20</sup> MB · 2<sup>30</sup> GB · 2<sup>40</sup> TB</dd>
+      <dt>Single box</dt><dd>~10k+ simple RPS app; Postgres ~10k TPS tuned</dd>
+    </dl>
+  </article>
+
+  <article class="card" data-lvl="m s a" data-cat="sysdesign cloud" data-k="scaling horizontal vertical load balancer l4 l7 round robin least connections sticky session stateless" style="--accent:var(--lime)">
+    <h3><span class="tag">SD</span> Scaling &amp; load balancing</h3>
+    <ul>
+      <li><b>Vertical</b> (bigger box, simple, ceiling) vs <b>horizontal</b> (more boxes, needs <b>stateless</b> services).</li>
+      <li><b>L4 LB</b> (TCP, fast, blind) vs <b>L7 LB</b> (HTTP-aware: path routing, headers, TLS termination).</li>
+      <li>Algorithms: round robin · weighted · <b>least connections</b> · IP hash · <b>consistent hashing</b>.</li>
+      <li>Sticky sessions = scaling smell; move session to Redis/JWT.</li>
+      <li><b>Autoscaling</b> on CPU, queue depth or custom metrics; scale-in carefully.</li>
+    </ul>
+  </article>
+
+  <article class="card" data-lvl="m s a" data-cat="sysdesign data" data-k="caching cache aside read through write through write back write behind eviction lru lfu ttl stampede thundering herd invalidation cdn redis memcached hot key" style="--accent:var(--lime)">
+    <h3><span class="tag">SD</span> Caching</h3>
+    <dl class="kv">
+      <dt>Cache-aside</dt><dd>app reads cache → miss → DB → fill. Most common.</dd>
+      <dt>Read-through</dt><dd>cache loads from DB itself</dd>
+      <dt>Write-through</dt><dd>write cache + DB synchronously (consistent, slower)</dd>
+      <dt>Write-back</dt><dd>write cache, flush later (fast, risk of loss)</dd>
+      <dt>Eviction</dt><dd>LRU · LFU · TTL · FIFO</dd>
+      <dt>Stampede</dt><dd>hot key expires, herd hits DB → lock / jittered TTL / stale-while-revalidate</dd>
+      <dt>Layers</dt><dd>browser → CDN → reverse proxy → app (in-mem) → Redis → DB</dd>
+    </dl>
+    <ul><li class="note">"Two hard things: cache invalidation and naming things."</li></ul>
+  </article>
+
+  <article class="card" data-lvl="s a" data-cat="sysdesign data" data-k="replication sharding partitioning consistent hashing leader follower multi leader leaderless quorum rebalancing hot partition" style="--accent:var(--lime)">
+    <h3><span class="tag">SD</span> Replication &amp; sharding</h3>
+    <ul>
+      <li><b>Leader-follower</b>: writes to leader, reads scale on replicas → <b>replication lag</b>.</li>
+      <li><b>Multi-leader</b>: multi-region writes → conflict resolution (LWW, CRDTs).</li>
+      <li><b>Leaderless</b> (Dynamo/Cassandra): quorum <code>W + R &gt; N</code>.</li>
+      <li><b>Sharding</b>: range (scans, hotspots) · hash (even, no ranges) · directory (flexible).</li>
+      <li><b>Consistent hashing</b>: ring + virtual nodes → adding a node moves ~1/N keys.</li>
+      <li class="err">Hot partitions (celebrity user) → key salting, split hot keys.</li>
+    </ul>
+  </article>
+
+  <article class="card" data-lvl="m s a" data-cat="sysdesign algo api" data-k="rate limiting limiter token bucket leaky bucket fixed window sliding window throttle 429" style="--accent:var(--lime)">
+    <h3><span class="tag">SD</span> Rate limiting</h3>
+    <ul>
+      <li><b>Token bucket</b>: refill at rate r, burst up to capacity. Most common.</li>
+      <li><b>Leaky bucket</b>: smooth constant outflow.</li>
+      <li><b>Fixed window</b> (edge bursts) · <b>sliding log</b> (exact, memory-heavy) · <b>sliding counter</b> (approx, cheap).</li>
+      <li>Distributed: Redis + Lua / atomic <code>INCR</code>. Return <code>429</code> + <code>Retry-After</code>.</li>
+    </ul>
+    <pre><code>def allow(now):
+    tokens = min(cap, tokens + (now - last) * rate); last = now
+    if tokens &gt;= 1: tokens -= 1; return True
+    return False</code></pre>
+  </article>
+
+  <article class="card" data-lvl="m s a" data-cat="sysdesign" data-k="classic designs url shortener news feed chat notification typeahead autocomplete snowflake id crawler fan out" style="--accent:var(--lime)">
+    <h3><span class="tag">SD</span> Classic designs: the key trick</h3>
+    <dl class="kv">
+      <dt>URL shortener</dt><dd>base62(ID) or hash + collision check; 301 vs 302; read-heavy → cache</dd>
+      <dt>News feed</dt><dd>fan-out on <b>write</b> (push) vs on <b>read</b> (pull); hybrid for celebrities</dd>
+      <dt>Chat</dt><dd>WebSockets, presence service, per-conversation ordering, offline store</dd>
+      <dt>Typeahead</dt><dd>trie / prefix index + top-K cache per prefix</dd>
+      <dt>Unique IDs</dt><dd>Snowflake: time | machine | sequence; UUIDv7 sortable</dd>
+      <dt>Notifications</dt><dd>queue per channel, retries, user prefs, dedupe</dd>
+      <dt>Web crawler</dt><dd>URL frontier, politeness, dedupe (Bloom filter)</dd>
+      <dt>File storage</dt><dd>chunking, content hashing, metadata DB + blob store</dd>
+    </dl>
+  </article>
+
+  <article class="card" data-lvl="s a" data-cat="sysdesign data terms" data-k="cap pacelc consistency models strong eventual causal read your writes linearizable raft paxos consensus leader election vector clock crdt" style="--accent:var(--lime)">
+    <h3><span class="tag">SD</span> Consistency &amp; consensus</h3>
+    <ul>
+      <li><b>CAP</b>: during a Partition, choose Consistency or Availability.</li>
+      <li><b>PACELC</b>: …Else (normal), Latency vs Consistency.</li>
+      <li>Models: <b>linearizable</b> &gt; sequential &gt; <b>causal</b> &gt; <b>read-your-writes</b> &gt; <b>eventual</b>.</li>
+      <li><b>Consensus</b>: Raft / Paxos (etcd, ZooKeeper) → leader election, replicated log, majority quorum.</li>
+      <li><b>Vector clocks</b> detect concurrent updates; <b>CRDTs</b> merge without conflicts (collab editing).</li>
+      <li><b>2PC</b>: atomic across nodes but blocking; prefer Sagas across services.</li>
+    </ul>
+  </article>
+
+  <!-- ================= DATA / SQL ================= -->
+  <article class="card" data-lvl="j m s" data-cat="data" data-k="sql join group by having window function cte row_number rank lag order of execution" style="--accent:var(--pink)">
+    <h3><span class="tag">SQL</span> Must-know queries</h3>
+    <pre><code><span class="c">-- top earner per department (window fn)</span>
+SELECT * FROM (
+  SELECT e.*, ROW_NUMBER() OVER (
+    PARTITION BY dept_id ORDER BY salary DESC) rn
+  FROM employees e) t
+WHERE rn = 1;
+<span class="c">-- depts with &gt; 5 people</span>
+SELECT dept_id, COUNT(*) FROM employees
+GROUP BY dept_id HAVING COUNT(*) &gt; 5;
+WITH recent AS (SELECT ... ) SELECT ... FROM recent;</code></pre>
+    <ul>
+      <li><b>Logical order:</b> FROM/JOIN → WHERE → GROUP BY → HAVING → SELECT → ORDER BY → LIMIT.</li>
+      <li>JOINs: INNER · LEFT · RIGHT · FULL · CROSS · self-join. Anti-join: <code>LEFT JOIN … WHERE b.id IS NULL</code>.</li>
+      <li><code>RANK</code> (gaps) vs <code>DENSE_RANK</code> vs <code>ROW_NUMBER</code>; <code>LAG/LEAD</code> for deltas.</li>
+    </ul>
+  </article>
+
+  <article class="card" data-lvl="j m s a" data-cat="data sysdesign" data-k="index b-tree composite covering explain n+1 query optimization selectivity" style="--accent:var(--pink)">
+    <h3><span class="tag">DB</span> Indexes &amp; query perf</h3>
+    <ul>
+      <li><b>B-tree</b> (range + equality) · <b>hash</b> (equality) · <b>GIN/inverted</b> (full-text, JSON) · <b>LSM</b> (write-heavy stores).</li>
+      <li><b>Composite left-prefix:</b> idx <code>(a,b,c)</code> helps <code>a</code>, <code>a,b</code>, not <code>b</code> alone.</li>
+      <li><b>Covering index</b>: answers query from index only.</li>
+      <li><b>EXPLAIN</b> red flags: full table scan, filesort / temp table, no key used.</li>
+      <li><b>N+1</b>: query in a loop → batch with <code>IN (...)</code> / JOIN / dataloader.</li>
+      <li>Indexes speed reads, <b>slow writes</b> and use space. Index for your access patterns.</li>
+    </ul>
+  </article>
+
+  <article class="card" data-lvl="m s a" data-cat="data conc" data-k="acid transactions isolation levels read committed repeatable read serializable dirty read phantom write skew mvcc optimistic pessimistic locking deadlock" style="--accent:var(--pink)">
+    <h3><span class="tag">DB</span> Transactions &amp; isolation</h3>
+    <ul><li><b>ACID</b>: Atomic · Consistent · Isolated · Durable.</li></ul>
+    <table>
+      <tr><th>Level</th><th>Prevents</th></tr>
+      <tr><td>Read uncommitted</td><td>nothing</td></tr>
+      <tr><td>Read committed</td><td>dirty reads (Postgres default)</td></tr>
+      <tr><td>Repeatable read</td><td>+ non-repeatable reads (MySQL default)</td></tr>
+      <tr><td>Serializable</td><td>+ phantoms, write skew</td></tr>
+    </table>
+    <ul>
+      <li><b>MVCC</b>: readers don't block writers (snapshots).</li>
+      <li><b>Optimistic</b> (version column, retry on conflict) vs <b>pessimistic</b> (<code>SELECT … FOR UPDATE</code>).</li>
+      <li><b>Deadlock</b>: lock cycle; DB kills a victim. Fix: consistent lock order, short txns, retry.</li>
+    </ul>
+  </article>
+
+  <article class="card" data-lvl="m s a" data-cat="data sysdesign" data-k="sql vs nosql document key value wide column graph time series search vector database normalization denormalization postgres mongodb cassandra dynamodb neo4j elasticsearch" style="--accent:var(--pink)">
+    <h3><span class="tag">DB</span> Picking a store</h3>
+    <dl class="kv">
+      <dt>Relational</dt><dd>Postgres, MySQL: joins, ACID, the safe default</dd>
+      <dt>Document</dt><dd>MongoDB: flexible JSON, aggregate-shaped reads</dd>
+      <dt>Key-value</dt><dd>Redis, DynamoDB: O(1) by key, massive scale</dd>
+      <dt>Wide-column</dt><dd>Cassandra, Bigtable: write-heavy, time-ordered</dd>
+      <dt>Graph</dt><dd>Neo4j: relationship traversal</dd>
+      <dt>Search</dt><dd>Elasticsearch/OpenSearch: inverted index, full-text</dd>
+      <dt>Time-series</dt><dd>TimescaleDB, InfluxDB: metrics</dd>
+      <dt>Vector</dt><dd>pgvector, Pinecone, Qdrant, Weaviate: similarity search</dd>
+    </dl>
+    <ul><li><b>Normalize</b> (3NF, no update anomalies) for writes; <b>denormalize</b> for read speed.</li></ul>
+  </article>
+
+  <article class="card" data-lvl="s a" data-cat="data" data-k="oltp olap etl elt data lake warehouse lakehouse parquet columnar star schema dbt" style="--accent:var(--pink)">
+    <h3><span class="tag">DATA</span> Analytics stack</h3>
+    <ul>
+      <li><b>OLTP</b> (many small txns, row store) vs <b>OLAP</b> (big scans, <b>columnar</b> store).</li>
+      <li><b>ETL</b> (transform before load) vs <b>ELT</b> (load raw, transform in warehouse with dbt).</li>
+      <li><b>Lake</b> (raw files) · <b>Warehouse</b> (structured, SQL) · <b>Lakehouse</b> (Iceberg/Delta on object storage).</li>
+      <li><b>Star schema</b>: fact table + dimension tables.</li>
+      <li>Parquet: columnar, compressed, predicate pushdown.</li>
+    </ul>
+  </article>
+
+  <!-- ================= APIs / WEB ================= -->
+  <article class="card" data-lvl="j m s a" data-cat="api" data-k="rest graphql grpc websocket sse server sent events webhooks soap protobuf compare" style="--accent:var(--blue)">
+    <h3><span class="tag">API</span> Styles compared</h3>
+    <dl class="kv">
+      <dt>REST</dt><dd>resources + HTTP verbs, cacheable GETs, simple. Over/under-fetch.</dd>
+      <dt>GraphQL</dt><dd>typed schema, client picks fields, one endpoint. N+1 resolvers, caching harder.</dd>
+      <dt>gRPC</dt><dd>Protobuf over HTTP/2, fast, streaming, codegen. Service-to-service.</dd>
+      <dt>WebSocket</dt><dd>full-duplex persistent connection (chat, games)</dd>
+      <dt>SSE</dt><dd>server → client stream over HTTP (LLM token streaming!)</dd>
+      <dt>Webhook</dt><dd>server calls <i>you</i> on events; verify signatures</dd>
+      <dt>SOAP</dt><dd>XML + WSDL, rigid, legacy enterprise</dd>
+    </dl>
+  </article>
+
+  <article class="card" data-lvl="j m s" data-cat="api" data-k="rest design status codes idempotent methods pagination cursor offset versioning etag hateoas" style="--accent:var(--blue)">
+    <h3><span class="tag">API</span> REST design rules</h3>
+    <ul>
+      <li>Nouns, plural: <code>GET /users/42/orders</code>. Verbs come from HTTP.</li>
+      <li><b>Idempotent:</b> GET, PUT, DELETE, HEAD. <b>Not:</b> POST (use an <code>Idempotency-Key</code> header), PATCH (usually).</li>
+      <li><b>Safe</b> (no side effects): GET, HEAD, OPTIONS.</li>
+      <li><b>Pagination:</b> offset (simple, drifts) vs <b>cursor</b> (stable, scalable).</li>
+      <li><b>Versioning:</b> URL <code>/v2</code> or header; never break clients silently.</li>
+      <li><b>Caching:</b> <code>ETag</code> + <code>If-None-Match</code> → <code>304</code>.</li>
+    </ul>
+    <dl class="kv">
+      <dt>2xx</dt><dd>200 OK · 201 Created · 204 No Content</dd>
+      <dt>3xx</dt><dd>301 permanent · 302/307 temporary · 304 not modified</dd>
+      <dt>4xx</dt><dd>400 bad · 401 unauthenticated · 403 forbidden · 404 · 409 conflict · 422 invalid · 429 too many</dd>
+      <dt>5xx</dt><dd>500 · 502 bad gateway · 503 unavailable · 504 gateway timeout</dd>
+    </dl>
+  </article>
+
+  <article class="card" data-lvl="j m" data-cat="api sysdesign" data-k="what happens when you type url dns tcp tls handshake http2 http3 quic browser cors cookies" style="--accent:var(--blue)">
+    <h3><span class="tag">WEB</span> What happens when you hit Enter</h3>
+    <ul>
+      <li><b>DNS</b> (cache → resolver → root → TLD → authoritative) → IP.</li>
+      <li><b>TCP</b> 3-way handshake → <b>TLS</b> handshake (cert, key exchange) → HTTP request.</li>
+      <li>CDN / LB → server → response → browser parses HTML → CSS/JS → render (DOM + CSSOM → layout → paint).</li>
+      <li><b>HTTP/2</b>: multiplexed streams on one TCP. <b>HTTP/3</b>: over <b>QUIC</b> (UDP), no head-of-line blocking.</li>
+      <li><b>CORS</b>: browser enforces cross-origin rules via preflight <code>OPTIONS</code>.</li>
+    </ul>
+  </article>
+
+  <!-- ================= ALGORITHMS ================= -->
+  <article class="card" data-lvl="j m s" data-cat="algo" data-k="big o complexity data structures array linked list hash table bst heap trie operations" style="--accent:var(--green)">
+    <h3><span class="tag">ALGO</span> Big-O of data structures</h3>
+    <table>
+      <tr><th>Structure</th><th>Access</th><th>Search</th><th>Insert</th><th>Delete</th></tr>
+      <tr><td>Array</td><td>1</td><td>n</td><td>n (end: 1*)</td><td>n</td></tr>
+      <tr><td>Linked list</td><td>n</td><td>n</td><td>1 (at node)</td><td>1</td></tr>
+      <tr><td>Hash map</td><td>–</td><td>1 avg</td><td>1 avg</td><td>1 avg</td></tr>
+      <tr><td>Balanced BST</td><td>log n</td><td>log n</td><td>log n</td><td>log n</td></tr>
+      <tr><td>Heap</td><td>top: 1</td><td>n</td><td>log n</td><td>log n</td></tr>
+      <tr><td>Trie</td><td>–</td><td>L</td><td>L</td><td>L</td></tr>
+    </table>
+    <ul>
+      <li>Sorts: merge O(n log n) stable · quick O(n log n) avg / n² worst · heap O(n log n) · counting/radix O(n+k).</li>
+      <li class="note">* amortized. Always state time <b>and</b> space.</li>
+    </ul>
+  </article>
+
+  <article class="card" data-lvl="j m s" data-cat="algo" data-k="leetcode patterns recognition two pointers sliding window binary search heap top k backtracking bfs dfs topological union find dynamic programming prefix sum monotonic stack intervals" style="--accent:var(--green)">
+    <h3><span class="tag">ALGO</span> Problem → pattern</h3>
+    <dl class="kv">
+      <dt>sorted array / pair sum</dt><dd>two pointers, binary search</dd>
+      <dt>contiguous subarray/string</dt><dd>sliding window</dd>
+      <dt>subarray sum = k</dt><dd>prefix sum + hash map</dd>
+      <dt>top / kth K</dt><dd>heap of size K (or quickselect)</dd>
+      <dt>all combos / perms</dt><dd>backtracking</dd>
+      <dt>shortest path, unweighted</dt><dd>BFS</dd>
+      <dt>weighted, non-negative</dt><dd>Dijkstra</dd>
+      <dt>dependencies / ordering</dt><dd>topological sort</dd>
+      <dt>connected groups</dt><dd>union-find / DFS</dd>
+      <dt>optimal + overlapping subproblems</dt><dd>dynamic programming</dd>
+      <dt>next greater element</dt><dd>monotonic stack</dd>
+      <dt>overlapping intervals</dt><dd>sort by start, merge</dd>
+      <dt>prefix lookups</dt><dd>trie</dd>
+      <dt>"min max" / "max min"</dt><dd>binary search on the answer</dd>
+    </dl>
+  </article>
+
+  <article class="card" data-lvl="j m s" data-cat="algo" data-k="templates code binary search sliding window bfs python snippet" style="--accent:var(--green)">
+    <h3><span class="tag">ALGO</span> Templates</h3>
+    <pre><code>def lower_bound(a, x):            <span class="c"># first i with a[i] &gt;= x</span>
+    lo, hi = 0, len(a)
+    while lo &lt; hi:
+        mid = (lo + hi) // 2
+        if a[mid] &lt; x: lo = mid + 1
+        else: hi = mid
+    return lo
+
+def longest_unique(s):            <span class="c"># sliding window</span>
+    seen, l, best = {}, 0, 0
+    for r, ch in enumerate(s):
+        if seen.get(ch, -1) &gt;= l: l = seen[ch] + 1
+        seen[ch] = r; best = max(best, r - l + 1)
+    return best
+
+def bfs(start):
+    dist, q = {start: 0}, deque([start])
+    while q:
+        u = q.popleft()
+        for v in graph[u]:
+            if v not in dist: dist[v] = dist[u] + 1; q.append(v)
+    return dist</code></pre>
+  </article>
+
+  <article class="card" data-lvl="j m s" data-cat="algo" data-k="dynamic programming dp memoization tabulation knapsack lcs edit distance coin change" style="--accent:var(--green)">
+    <h3><span class="tag">ALGO</span> Dynamic programming</h3>
+    <ul>
+      <li>Define <b>state</b> → <b>transition</b> → <b>base case</b> → answer location.</li>
+      <li><b>Top-down</b> (recursion + memo) is easy to write; <b>bottom-up</b> (table) avoids stack depth and can compress space.</li>
+      <li>Classics: climbing stairs, coin change, 0/1 knapsack, LIS, LCS, edit distance, house robber, unique paths.</li>
+    </ul>
+    <pre><code>@cache
+def coins(n):                     <span class="c"># min coins for n</span>
+    if n == 0: return 0
+    return min((coins(n - c) + 1 for c in C if c &lt;= n), default=inf)</code></pre>
+  </article>
+
+  <article class="card" data-lvl="m s" data-cat="algo" data-k="graph algorithms dijkstra bellman ford floyd warshall topological sort kahn union find disjoint set mst kruskal prim a star" style="--accent:var(--green)">
+    <h3><span class="tag">ALGO</span> Graphs</h3>
+    <dl class="kv">
+      <dt>BFS / DFS</dt><dd>O(V+E); BFS = shortest in unweighted</dd>
+      <dt>Dijkstra</dt><dd>non-negative weights, heap: O(E log V)</dd>
+      <dt>Bellman-Ford</dt><dd>negative weights, detects negative cycles: O(VE)</dd>
+      <dt>Floyd-Warshall</dt><dd>all pairs: O(V³)</dd>
+      <dt>Topo sort</dt><dd>Kahn's (in-degree queue) or DFS post-order; cycle = impossible</dd>
+      <dt>Union-Find</dt><dd>path compression + union by rank ≈ O(α(n))</dd>
+      <dt>MST</dt><dd>Kruskal (sort edges + UF) / Prim (heap)</dd>
+      <dt>A*</dt><dd>Dijkstra + heuristic (maps, games)</dd>
+    </dl>
+  </article>
+
+  <article class="card" data-lvl="j m s" data-cat="algo soft" data-k="coding interview approach edge cases communication umpire" style="--accent:var(--green)">
+    <h3><span class="tag">ALGO</span> Coding round playbook</h3>
+    <ul>
+      <li><b>1</b> Clarify inputs, sizes, constraints. <b>2</b> Walk an example by hand.</li>
+      <li><b>3</b> State brute force + Big-O. <b>4</b> Optimize (what's repeated work? sort? hash? heap?).</li>
+      <li><b>5</b> Code cleanly, talk while typing. <b>6</b> Dry-run and test.</li>
+      <li><b>Edge cases:</b> empty, one element, duplicates, negatives, overflow, already sorted, huge input, unicode.</li>
+      <li class="note">Say "fine at 1k, fatal at 1M" to show you think about scale.</li>
+    </ul>
+  </article>
+
+  <!-- ================= CONCURRENCY ================= -->
+  <article class="card" data-lvl="m s a" data-cat="conc" data-k="concurrency parallelism thread process coroutine race condition deadlock livelock starvation mutex semaphore lock atomic cas memory model" style="--accent:var(--amber)">
+    <h3><span class="tag">CONC</span> Concurrency core</h3>
+    <ul>
+      <li><b>Concurrency</b> = dealing with many things (structure). <b>Parallelism</b> = doing many at once (execution).</li>
+      <li><b>Process</b> (own memory) · <b>thread</b> (shared memory) · <b>coroutine / green thread</b> (user-space, cheap).</li>
+      <li><b>Race condition</b>: result depends on timing. Fix: mutex, atomics, immutability, confinement.</li>
+      <li><b>Deadlock</b> needs all 4 (Coffman): mutual exclusion, hold-and-wait, no preemption, circular wait. Break one (lock ordering).</li>
+      <li><b>Livelock</b> (busy, no progress) · <b>starvation</b> (never scheduled).</li>
+      <li>Primitives: mutex · RW lock · semaphore · condition variable · <b>CAS</b> (lock-free) · barriers.</li>
+      <li><b>Visibility</b>: without a memory barrier/volatile/atomic, other threads may see stale values.</li>
+    </ul>
+  </article>
+
+  <article class="card" data-lvl="m s a" data-cat="conc patterns" data-k="async await event loop actor model csp futures promises producer consumer thread pool structured concurrency" style="--accent:var(--amber)">
+    <h3><span class="tag">CONC</span> Models &amp; patterns</h3>
+    <ul>
+      <li><b>Event loop</b> + non-blocking I/O (Node, asyncio, Netty): great for I/O-bound; never block the loop.</li>
+      <li><b>Actors</b> (Erlang, Akka, Orleans): private state, communicate by messages.</li>
+      <li><b>CSP</b> (Go): processes + channels.</li>
+      <li><b>Futures / promises</b>: placeholder for a later value.</li>
+      <li><b>Producer-consumer</b> with a bounded queue = built-in backpressure.</li>
+      <li><b>Thread pool</b>: bound concurrency; size ≈ cores (CPU) or higher (I/O).</li>
+      <li><b>Structured concurrency</b>: child tasks can't outlive parent scope (Kotlin, Java 21+, Trio).</li>
+    </ul>
+  </article>
+
+  <!-- ================= SECURITY ================= -->
+  <article class="card" data-lvl="j m s a" data-cat="sec" data-k="owasp top 10 sql injection xss csrf ssrf broken access control idor deserialization" style="--accent:var(--red)">
+    <h3><span class="tag">SEC</span> OWASP → defense</h3>
+    <dl class="kv">
+      <dt>Broken access ctrl</dt><dd>#1. Check authz server-side on <b>every</b> object (IDOR)</dd>
+      <dt>Injection (SQLi)</dt><dd>parameterized queries, never string-concat</dd>
+      <dt>XSS</dt><dd>context-aware output encoding, CSP header</dd>
+      <dt>CSRF</dt><dd>SameSite cookies, anti-CSRF tokens</dd>
+      <dt>SSRF</dt><dd>allowlist outbound URLs, block metadata IPs</dd>
+      <dt>Insecure deserial.</dt><dd>never deserialize untrusted native objects</dd>
+      <dt>Crypto failures</dt><dd>TLS everywhere, strong algos, no homemade crypto</dd>
+      <dt>Misconfiguration</dt><dd>no default creds, least privilege, no verbose errors</dd>
+      <dt>Vulnerable deps</dt><dd>SCA scanning, SBOM, pin + update</dd>
+    </dl>
+  </article>
+
+  <article class="card" data-lvl="m s a" data-cat="sec api" data-k="authentication authorization authn authz jwt session oauth oauth2 oidc openid pkce saml sso rbac abac mfa passkeys webauthn" style="--accent:var(--red)">
+    <h3><span class="tag">SEC</span> AuthN · AuthZ · OAuth</h3>
+    <ul>
+      <li><b>AuthN</b> = who are you. <b>AuthZ</b> = what may you do.</li>
+      <li><b>Session cookie</b> (server state, easy revoke) vs <b>JWT</b> (stateless, signed; hard to revoke → short TTL + refresh token).</li>
+      <li><b>OAuth 2.0</b> = delegated authorization. <b>OIDC</b> = identity layer on top (ID token).</li>
+      <li>Flows: <b>Authorization Code + PKCE</b> (apps, SPAs) · <b>Client Credentials</b> (service-to-service).</li>
+      <li><b>RBAC</b> (roles) vs <b>ABAC</b> (attributes/policies) vs ReBAC (relationships, Zanzibar).</li>
+      <li><b>MFA</b>, <b>passkeys / WebAuthn</b> (phishing-resistant), SSO via SAML/OIDC.</li>
+    </ul>
+  </article>
+
+  <article class="card" data-lvl="m s a" data-cat="sec" data-k="hashing encryption encoding bcrypt argon2 salt aes rsa ecc symmetric asymmetric hmac tls secrets zero trust least privilege supply chain sbom" style="--accent:var(--red)">
+    <h3><span class="tag">SEC</span> Crypto &amp; hygiene</h3>
+    <dl class="kv">
+      <dt>Encoding</dt><dd>format change, no secrecy (Base64)</dd>
+      <dt>Hashing</dt><dd>one-way (SHA-256). Passwords: <b>argon2 / bcrypt</b> + salt</dd>
+      <dt>Symmetric</dt><dd>one shared key, fast (AES-GCM)</dd>
+      <dt>Asymmetric</dt><dd>public/private (RSA, ECC): key exchange, signatures</dd>
+      <dt>HMAC</dt><dd>keyed hash → integrity + authenticity (webhooks)</dd>
+      <dt>Secrets</dt><dd>vault / KMS, never in git, rotate</dd>
+      <dt>Zero trust</dt><dd>never trust network location; verify every request</dd>
+      <dt>Least privilege</dt><dd>minimal permissions for users, services, CI tokens</dd>
+      <dt>Supply chain</dt><dd>SBOM, signed artifacts (Sigstore), lockfiles</dd>
+    </dl>
+  </article>
+
+  <!-- ================= TESTING ================= -->
+  <article class="card" data-lvl="j m s" data-cat="test" data-k="testing pyramid unit integration e2e contract tdd bdd mock stub fake spy property based mutation flaky coverage" style="--accent:var(--teal)">
+    <h3><span class="tag">TEST</span> Testing essentials</h3>
+    <ul>
+      <li><b>Pyramid:</b> many unit → fewer integration → few E2E. (Trophy: favor integration.)</li>
+      <li><b>Contract tests</b> (Pact): consumer/provider agree on API without full E2E.</li>
+      <li><b>TDD:</b> red → green → refactor. <b>BDD:</b> Given / When / Then.</li>
+      <li><b>Doubles:</b> dummy · <b>stub</b> (canned answers) · <b>fake</b> (working lite impl) · <b>spy</b> (records calls) · <b>mock</b> (verifies expectations).</li>
+      <li><b>Property-based</b> (Hypothesis, fast-check): random inputs, assert invariants.</li>
+      <li><b>Mutation testing</b>: do your tests catch injected bugs?</li>
+      <li class="err">Coverage ≠ quality. Flaky tests erode trust: quarantine, fix the timing/order dependency.</li>
+      <li><b>AAA</b>: Arrange, Act, Assert. Test behavior, not implementation.</li>
+    </ul>
+  </article>
+
+  <!-- ================= DEVOPS / SRE ================= -->
+  <article class="card" data-lvl="m s a" data-cat="ops" data-k="ci cd continuous integration delivery deployment blue green canary rolling feature flag dark launch shadow trunk based semver rollback backward compatibility" style="--accent:var(--amber)">
+    <h3><span class="tag">OPS</span> Delivery</h3>
+    <dl class="kv">
+      <dt>CI</dt><dd>merge often, build + test every commit</dd>
+      <dt>CD</dt><dd>delivery (deployable) vs deployment (auto to prod)</dd>
+      <dt>Trunk-based</dt><dd>short-lived branches + flags over long feature branches</dd>
+      <dt>Rolling</dt><dd>replace instances gradually</dd>
+      <dt>Blue-green</dt><dd>two envs, atomic switch, instant rollback</dd>
+      <dt>Canary</dt><dd>small % of traffic, watch metrics, widen</dd>
+      <dt>Feature flag</dt><dd>decouple deploy from release</dd>
+      <dt>Shadow</dt><dd>mirror prod traffic to new version, discard responses</dd>
+      <dt>Semver</dt><dd>MAJOR (breaking) . MINOR (feature) . PATCH (fix)</dd>
+      <dt>Expand/contract</dt><dd>backward-compatible DB migrations in steps</dd>
+    </dl>
+  </article>
+
+  <article class="card" data-lvl="m s a" data-cat="ops sysdesign" data-k="observability logs metrics traces opentelemetry red use golden signals sli slo sla error budget alerting p99 latency" style="--accent:var(--amber)">
+    <h3><span class="tag">SRE</span> Observability</h3>
+    <ul>
+      <li>Three pillars: <b>logs</b> (events) · <b>metrics</b> (aggregates) · <b>traces</b> (request path). <b>OpenTelemetry</b> standardizes them.</li>
+      <li><b>RED</b> (services): Rate, Errors, Duration. <b>USE</b> (resources): Utilization, Saturation, Errors.</li>
+      <li><b>Golden signals:</b> latency, traffic, errors, saturation.</li>
+      <li><b>SLI</b> (measure) → <b>SLO</b> (target) → <b>SLA</b> (contract). <b>Error budget</b> = 1 − SLO; spend it on velocity.</li>
+      <li>Watch <b>p95/p99</b>, not averages. Alert on user-facing symptoms, not causes.</li>
+      <li>Structured logs + correlation / trace IDs across services.</li>
+    </ul>
+  </article>
+
+  <article class="card" data-lvl="m s a" data-cat="ops soft" data-k="debugging root cause analysis rca postmortem blameless 5 whys incident bisect production" style="--accent:var(--amber)">
+    <h3><span class="tag">RCA</span> Debugging &amp; incidents</h3>
+    <ul>
+      <li><b>1</b> Reproduce (minimal, deterministic). No repro, no confident fix.</li>
+      <li><b>2</b> What changed? Deploys, config, traffic, dependencies. <b>Roll back first</b>, debug second.</li>
+      <li><b>3</b> Bisect (<code>git bisect</code>, toggle components).</li>
+      <li><b>4</b> Instrument: logs, traces, profiler, slow-query log.</li>
+      <li><b>5</b> Hypothesis → <b>prove</b> it. Correlation ≠ cause.</li>
+      <li><b>6</b> Fix the cause, add a regression test.</li>
+      <li><b>7</b> Blameless postmortem: impact → timeline → root cause (5 whys) → action items.</li>
+      <li class="note">"It's slow": walk the layers: client → CDN → LB → app → cache → DB → downstream.</li>
+    </ul>
+  </article>
+
+  <!-- ================= AI / ML / LLM ================= -->
+  <article class="card" data-lvl="j m s a" data-cat="ai" data-k="machine learning ml supervised unsupervised reinforcement self supervised classification regression overfitting underfitting bias variance regularization cross validation data leakage feature engineering" style="--accent:var(--violet)">
+    <h3><span class="tag">ML</span> Fundamentals</h3>
+    <ul>
+      <li><b>Supervised</b> (labeled: classify / regress) · <b>unsupervised</b> (clustering, dim. reduction) · <b>self-supervised</b> (labels from data itself, how LLMs pretrain) · <b>reinforcement</b> (reward).</li>
+      <li><b>Train / validation / test</b> split. Tune on validation, report on test once.</li>
+      <li><b>Overfitting</b> (memorizes, high variance) vs <b>underfitting</b> (too simple, high bias).</li>
+      <li>Fixes: more data, <b>regularization</b> (L1 sparse / L2 small weights), dropout, early stopping, simpler model.</li>
+      <li><b>Cross-validation</b> (k-fold) for small data.</li>
+      <li class="err"><b>Data leakage</b>: test info bleeding into training → fake-great metrics.</li>
+    </ul>
+  </article>
+
+  <article class="card" data-lvl="j m s" data-cat="ai" data-k="metrics precision recall f1 accuracy roc auc confusion matrix mse mae rmse imbalance" style="--accent:var(--violet)">
+    <h3><span class="tag">ML</span> Metrics</h3>
+    <dl class="kv">
+      <dt>Precision</dt><dd>TP / (TP+FP): of flagged, how many right? (spam filter)</dd>
+      <dt>Recall</dt><dd>TP / (TP+FN): of real, how many caught? (cancer screen)</dd>
+      <dt>F1</dt><dd>harmonic mean of P and R</dd>
+      <dt>Accuracy</dt><dd class="err">misleading on imbalanced data (99% "not fraud")</dd>
+      <dt>ROC-AUC / PR-AUC</dt><dd>threshold-free ranking quality; PR for rare positives</dd>
+      <dt>MAE / RMSE</dt><dd>regression error; RMSE punishes big misses</dd>
+      <dt>Imbalance</dt><dd>resample, class weights, pick the right metric</dd>
+    </dl>
+  </article>
+
+  <article class="card" data-lvl="j m s" data-cat="ai algo" data-k="classic ml algorithms linear regression logistic decision tree random forest gradient boosting xgboost svm knn kmeans pca naive bayes" style="--accent:var(--violet)">
+    <h3><span class="tag">ML</span> Classic algorithms</h3>
+    <dl class="kv">
+      <dt>Linear / logistic reg.</dt><dd>baseline, interpretable</dd>
+      <dt>Decision tree</dt><dd>if/else splits; overfits alone</dd>
+      <dt>Random forest</dt><dd>bagging many trees → robust</dd>
+      <dt>Gradient boosting</dt><dd>XGBoost / LightGBM: king of tabular data</dd>
+      <dt>SVM</dt><dd>max-margin boundary, kernels</dd>
+      <dt>k-NN</dt><dd>vote of nearest neighbors</dd>
+      <dt>k-means</dt><dd>clustering into k centroids</dd>
+      <dt>PCA</dt><dd>linear dimensionality reduction</dd>
+      <dt>Naive Bayes</dt><dd>fast text classification baseline</dd>
+    </dl>
+  </article>
+
+  <article class="card" data-lvl="m s" data-cat="ai" data-k="deep learning neural network backpropagation gradient descent sgd adam learning rate activation relu softmax loss cross entropy epoch batch cnn rnn lstm vanishing gradient" style="--accent:var(--violet)">
+    <h3><span class="tag">DL</span> Deep learning</h3>
+    <ul>
+      <li>Neural net = layers of weighted sums + <b>non-linear activations</b> (ReLU, GELU; softmax → probabilities).</li>
+      <li><b>Loss</b> (cross-entropy, MSE) → <b>backprop</b> computes gradients → <b>optimizer</b> (SGD, Adam) updates weights.</li>
+      <li><b>Learning rate</b>: the most important hyperparameter. Warmup + decay schedules.</li>
+      <li><b>Epoch</b> = one pass over data; <b>batch</b> = examples per update.</li>
+      <li>Architectures: <b>CNN</b> (images) · <b>RNN/LSTM</b> (sequences, legacy) · <b>Transformer</b> (everything now).</li>
+      <li>Stability: normalization (LayerNorm), residual connections, gradient clipping.</li>
+    </ul>
+  </article>
+
+  <article class="card" data-lvl="j m s a" data-cat="ai" data-k="llm large language model transformer attention self attention token tokenization bpe embeddings context window pretraining next token prediction parameters kv cache scaling laws decoder" style="--accent:var(--violet)">
+    <h3><span class="tag">LLM</span> How LLMs work</h3>
+    <ul>
+      <li><b>Tokens</b>: subword pieces (BPE). ~4 chars ≈ 1 token in English. Pricing and limits are per token.</li>
+      <li><b>Embeddings</b>: tokens → vectors where meaning ≈ direction.</li>
+      <li><b>Self-attention</b>: every token weighs every other token (Q·K → weights over V). Cost O(n²) in length.</li>
+      <li><b>Decoder-only Transformer</b>, trained on <b>next-token prediction</b> (pretraining), then post-trained to follow instructions.</li>
+      <li><b>Context window</b>: max tokens in + out per call (the model's working memory).</li>
+      <li><b>Inference</b>: autoregressive, one token at a time; <b>KV cache</b> avoids recomputing past tokens.</li>
+      <li><b>Scaling laws</b>: loss falls predictably with more params, data, compute.</li>
+    </ul>
+  </article>
+
+  <article class="card" data-lvl="j m s a" data-cat="ai" data-k="prompt engineering temperature top p top k sampling system prompt few shot zero shot chain of thought reasoning structured output json schema prompt injection" style="--accent:var(--violet)">
+    <h3><span class="tag">LLM</span> Prompting &amp; sampling</h3>
+    <dl class="kv">
+      <dt>Temperature</dt><dd>randomness; 0 ≈ deterministic, higher = creative</dd>
+      <dt>Top-p / top-k</dt><dd>sample only from the likeliest tokens</dd>
+      <dt>System prompt</dt><dd>role, rules, format, persistent instructions</dd>
+      <dt>Zero / few-shot</dt><dd>no examples / a few examples in the prompt</dd>
+      <dt>In-context learning</dt><dd>learns the task from the prompt, no weight updates</dd>
+      <dt>Chain-of-thought</dt><dd>reason step by step; <b>reasoning models</b> do it natively (test-time compute)</dd>
+      <dt>Structured output</dt><dd>JSON schema / tool schemas for reliable parsing</dd>
+      <dt>Context engineering</dt><dd>curating exactly what goes into the window</dd>
+      <dt class="err">Prompt injection</dt><dd>untrusted text hijacks instructions; isolate + least-privilege tools</dd>
+    </dl>
+  </article>
+
+  <article class="card" data-lvl="m s a" data-cat="ai" data-k="fine tuning lora qlora peft rlhf rlaif dpo instruction tuning distillation alignment constitutional ai sft post training" style="--accent:var(--violet)">
+    <h3><span class="tag">LLM</span> Prompt vs RAG vs fine-tune</h3>
+    <ul>
+      <li><b>Prompting</b> first: cheapest, instant iteration.</li>
+      <li><b>RAG</b> when the model needs <b>knowledge</b> (private, fresh, citable).</li>
+      <li><b>Fine-tuning</b> when you need <b>behavior/format/style</b> baked in, or a smaller cheaper model.</li>
+      <li><b>SFT</b> (supervised fine-tuning on examples) · <b>LoRA / QLoRA</b> (PEFT: train tiny adapter matrices, not all weights).</li>
+      <li><b>RLHF</b>: reward model from human preferences → RL. <b>DPO</b>: preference optimization without RL. <b>RLAIF / Constitutional AI</b>: AI feedback guided by principles.</li>
+      <li><b>Distillation</b>: big teacher model trains small student.</li>
+    </ul>
+  </article>
+
+  <article class="card" data-lvl="m s a" data-cat="ai sysdesign data" data-k="rag retrieval augmented generation vector database embeddings chunking semantic search hybrid bm25 rerank hnsw cosine similarity grounding citations" style="--accent:var(--violet)">
+    <h3><span class="tag">RAG</span> Retrieval-augmented generation</h3>
+    <pre><code><span class="c"># ingest</span>
+chunks = split(docs, size=500, overlap=50)
+store.upsert([(c.id, embed(c.text), c.meta) for c in chunks])
+<span class="c"># query</span>
+hits = store.search(embed(q), k=20)          <span class="c"># ANN: HNSW</span>
+hits = rerank(q, hits)[:5]                   <span class="c"># cross-encoder</span>
+answer = llm(f"Answer only from:\n{hits}\n\nQ: {q}")</code></pre>
+    <ul>
+      <li><b>Similarity:</b> cosine / dot product over embeddings.</li>
+      <li><b>Hybrid search</b> = BM25 keywords + vectors → better recall on names/IDs.</li>
+      <li>Quality levers: chunking strategy, metadata filters, reranking, query rewriting.</li>
+      <li><b>Evaluate:</b> retrieval recall@k, answer <b>faithfulness / groundedness</b>, citation accuracy.</li>
+      <li class="note">GraphRAG: retrieve over a knowledge graph for multi-hop questions.</li>
+    </ul>
+  </article>
+
+  <article class="card" data-lvl="m s a" data-cat="ai arch" data-k="ai agents agentic tool use function calling react loop planning memory mcp model context protocol multi agent orchestration guardrails human in the loop computer use coding agent" style="--accent:var(--violet)">
+    <h3><span class="tag">AGENT</span> Agents &amp; tool use</h3>
+    <pre><code>while not done:                     <span class="c"># the agent loop</span>
+    msg = llm(history, tools=TOOLS)
+    if msg.tool_call:
+        result = run(msg.tool_call)     <span class="c"># sandboxed, permissioned</span>
+        history += [msg, result]
+    else: done = True</code></pre>
+    <ul>
+      <li><b>Tool / function calling</b>: model emits structured calls; your code executes them.</li>
+      <li><b>ReAct</b>: reason → act → observe, repeat.</li>
+      <li><b>MCP</b> (Model Context Protocol): open standard to plug tools &amp; data into any AI app.</li>
+      <li><b>Memory</b>: short-term (context) vs long-term (vector store, files).</li>
+      <li><b>Multi-agent</b>: orchestrator + specialized subagents working in parallel.</li>
+      <li><b>Guardrails</b>, <b>human-in-the-loop</b> approvals, sandboxing, least-privilege credentials.</li>
+      <li class="note">Workflow (fixed steps) vs agent (model picks steps). Use the simplest that works.</li>
+    </ul>
+  </article>
+
+  <article class="card" data-lvl="s a" data-cat="ai ops" data-k="llmops mlops evals llm as judge latency ttft throughput cost prompt caching semantic cache quantization batching streaming model routing hallucination observability drift" style="--accent:var(--violet)">
+    <h3><span class="tag">LLMOps</span> Shipping AI to prod</h3>
+    <ul>
+      <li><b>Evals</b> are the test suite: golden datasets, <b>LLM-as-judge</b>, human review, regression gates in CI.</li>
+      <li><b>Latency:</b> TTFT (time to first token) + tokens/sec. <b>Stream</b> responses (SSE).</li>
+      <li><b>Cost:</b> input vs output tokens, <b>prompt caching</b>, semantic caching, batch APIs, <b>model routing</b> (small model first, escalate).</li>
+      <li><b>Quantization</b> (int8/int4, GGUF) shrinks models for cheaper/local inference.</li>
+      <li><b>Hallucination</b> mitigation: grounding/RAG, citations, "say I don't know", validation of outputs.</li>
+      <li><b>MLOps:</b> feature store, model registry, data/model <b>drift</b> monitoring, retraining pipelines.</li>
+    </ul>
+  </article>
+
+  <article class="card" data-lvl="s a" data-cat="ai sysdesign" data-k="design ai system chatbot llm gateway architecture assistant copilot" style="--accent:var(--violet)">
+    <h3><span class="tag">AI-SD</span> Design an AI assistant</h3>
+    <ul>
+      <li><b>Ingestion:</b> connectors → clean → chunk → embed → vector + keyword index; respect ACLs per doc.</li>
+      <li><b>Serving:</b> API → auth → <b>LLM gateway</b> (routing, retries, rate limits, keys, cost tracking).</li>
+      <li><b>Orchestration:</b> query rewrite → retrieve → rerank → prompt → generate → cite.</li>
+      <li><b>Safety:</b> input/output guardrails, PII redaction, prompt-injection defense.</li>
+      <li><b>Quality loop:</b> offline evals + online feedback (thumbs, edits) → improve.</li>
+      <li><b>Scale:</b> streaming, caching, async jobs for long tasks, fallbacks when a provider is down.</li>
+    </ul>
+  </article>
+
+  <article class="card" data-lvl="j m s a" data-cat="ai terms" data-k="ai buzzwords genai generative foundation model multimodal diffusion gan vae moe mixture of experts slm open weights agi synthetic data vibe coding copilot hallucination emergent embeddings" style="--accent:var(--violet)">
+    <h3><span class="tag">AI</span> Buzzword decoder</h3>
+    <dl class="kv">
+      <dt>GenAI</dt><dd>models that generate text, images, audio, code</dd>
+      <dt>Foundation model</dt><dd>big general pretrained model, adapted to many tasks</dd>
+      <dt>Multimodal</dt><dd>text + image + audio + video in/out</dd>
+      <dt>Diffusion</dt><dd>generate by iteratively denoising (images, video)</dd>
+      <dt>GAN / VAE</dt><dd>older generative models: adversarial / latent-space</dd>
+      <dt>MoE</dt><dd>mixture of experts: only some params active per token</dd>
+      <dt>SLM</dt><dd>small language model; on-device, cheap</dd>
+      <dt>Open-weights</dt><dd>weights downloadable (Llama, Mistral, Qwen, DeepSeek)</dd>
+      <dt>Hallucination</dt><dd>fluent but false output</dd>
+      <dt>Grounding</dt><dd>tying answers to trusted sources</dd>
+      <dt>Emergent ability</dt><dd>skill appearing only at larger scale</dd>
+      <dt>Test-time compute</dt><dd>spend more inference "thinking" for better answers</dd>
+      <dt>Synthetic data</dt><dd>model-generated training data</dd>
+      <dt>Copilot</dt><dd>AI assistant embedded in a workflow</dd>
+      <dt>Agentic</dt><dd>AI that plans and takes multi-step actions</dd>
+      <dt>Vibe coding</dt><dd>building by prompting, reviewing little code</dd>
+      <dt>AGI</dt><dd>hypothetical human-level general intelligence</dd>
+    </dl>
+  </article>
+
+  <article class="card" data-lvl="s a" data-cat="ai sec" data-k="responsible ai ethics safety alignment bias fairness explainability privacy governance eu ai act" style="--accent:var(--violet)">
+    <h3><span class="tag">AI</span> Responsible AI</h3>
+    <ul>
+      <li><b>Alignment</b>: model does what humans intend, safely.</li>
+      <li><b>Bias &amp; fairness</b>: skewed data → skewed outcomes; measure across groups.</li>
+      <li><b>Explainability</b>: SHAP, LIME, feature importance; needed in regulated domains.</li>
+      <li><b>Privacy</b>: PII redaction, data retention, don't train on customer data without consent.</li>
+      <li><b>Governance</b>: model cards, audit trails, risk tiers (EU AI Act).</li>
+      <li><b>Red teaming</b>: adversarially probe for jailbreaks and harmful output.</li>
+    </ul>
+  </article>
+
+  <!-- ================= BEHAVIORAL ================= -->
+  <article class="card" data-lvl="j m s a" data-cat="soft" data-k="behavioral star method situation task action result tell me about a time conflict failure leadership" style="--accent:var(--pink)">
+    <h3><span class="tag">SOFT</span> STAR answers</h3>
+    <ul>
+      <li><b>S</b>ituation (1 line) → <b>T</b>ask (your goal) → <b>A</b>ction (<b>"I"</b>, most detail) → <b>R</b>esult (numbers) → <b>L</b>earning.</li>
+      <li>Prep 6–8 stories that flex: conflict, failure, ambiguity, leadership without authority, tough tradeoff, mentoring, biggest impact, disagreeing with a manager.</li>
+      <li>Failure story: real mistake, own it, show what changed after.</li>
+      <li class="note">2 minutes per story. Let them dig in.</li>
+    </ul>
+  </article>
+
+  <article class="card" data-lvl="s a" data-cat="soft sysdesign" data-k="tradeoffs senior signals questions to ask interviewer communication" style="--accent:var(--pink)">
+    <h3><span class="tag">SOFT</span> Senior signals</h3>
+    <ul>
+      <li>"It depends" → <b>say on what</b>, then pick one and justify.</li>
+      <li>Name the pattern + where you'd use it + <b>how it fails</b>.</li>
+      <li>Think in <b>tradeoffs</b>: latency vs consistency, cost vs speed, simple vs flexible.</li>
+      <li>Mention ops: monitoring, rollback, migration, on-call impact.</li>
+      <li><b>Ask them:</b> how do you ship to prod? what does on-call look like? what would make me succeed in 6 months? biggest tech debt?</li>
+    </ul>
+  </article>
+
+  <!-- ================= GLOSSARY ================= -->
+  <article class="card" data-lvl="m s a" data-cat="terms sysdesign events" data-k="distributed systems glossary idempotency at least once eventual consistency acid base cap optimistic pessimistic race" style="--accent:var(--teal)">
+    <h3><span class="tag">TERMS</span> Distributed / correctness</h3>
+    <dl class="kv">
+      <dt>Idempotency</dt><dd>repeat = same result; key dedupes retries</dd>
+      <dt>At-least-once</dt><dd>+ idempotent consumer ≈ exactly-once</dd>
+      <dt>Eventual consist.</dt><dd>replicas converge; stale reads expected</dd>
+      <dt>ACID / BASE</dt><dd>txn guarantees / basically-available soft-state</dd>
+      <dt>CAP</dt><dd>on partition pick Consistency or Availability</dd>
+      <dt>Optimistic / pess.</dt><dd>version check vs lock up front</dd>
+      <dt>Split brain</dt><dd>two leaders after a partition; fencing tokens</dd>
+      <dt>Clock skew</dt><dd>never trust wall clocks for ordering</dd>
+      <dt>Bloom filter</dt><dd>"maybe in set" / "definitely not", tiny memory</dd>
+    </dl>
+  </article>
+
+  <article class="card" data-lvl="m s a" data-cat="terms sysdesign" data-k="performance glossary cache stampede backpressure p99 tail latency amortized throughput latency hot path" style="--accent:var(--teal)">
+    <h3><span class="tag">TERMS</span> Performance</h3>
+    <dl class="kv">
+      <dt>Latency / throughput</dt><dd>time per request / requests per time</dd>
+      <dt>P95 / P99</dt><dd>tail latency: what users feel; averages lie</dd>
+      <dt>Backpressure</dt><dd>consumer signals "slow down"</dd>
+      <dt>Cache stampede</dt><dd>herd of misses on one expired key</dd>
+      <dt>Amortized</dt><dd>average cost over a sequence of ops</dd>
+      <dt>Little's law</dt><dd>L = λW (in-flight = rate × time)</dd>
+      <dt>Amdahl's law</dt><dd>speedup capped by the serial part</dd>
+      <dt>Head-of-line</dt><dd>one slow item blocks the queue</dd>
+    </dl>
+  </article>
+
+  <article class="card" data-lvl="s a" data-cat="terms ops" data-k="delivery ops glossary mttr mtbf circuit breaker saga toil runbook on call sre" style="--accent:var(--teal)">
+    <h3><span class="tag">TERMS</span> Ops &amp; reliability</h3>
+    <dl class="kv">
+      <dt>MTTR / MTBF</dt><dd>time to recover / between failures</dd>
+      <dt>Circuit breaker</dt><dd>stop calling a failing dependency; fail fast</dd>
+      <dt>Graceful degradation</dt><dd>serve partial results over errors</dd>
+      <dt>Retry storm</dt><dd>retries amplify outage; backoff + budgets</dd>
+      <dt>Toil</dt><dd>manual, repetitive ops work: automate it</dd>
+      <dt>Runbook</dt><dd>step-by-step incident procedure</dd>
+      <dt>Blast radius</dt><dd>how much breaks when this breaks</dd>
+      <dt>Shift left</dt><dd>test/secure earlier in the lifecycle</dd>
+      <dt>Platform eng.</dt><dd>internal developer platform, golden paths</dd>
+    </dl>
+  </article>
+
+  <article class="card" data-lvl="j m s a" data-cat="soft oop sysdesign" data-k="thesis mindset summary how to think" style="--accent:var(--violet)">
+    <h3><span class="tag">★</span> The thesis</h3>
+    <ul>
+      <li class="lead">Every answer: <b>clarify</b> → <b>simplest thing that works</b> → <b>where it breaks</b> → <b>how you'd know</b> → <b>what you'd change</b>.</li>
+      <li>Concepts are language-agnostic. Syntax is lookup, judgment is the job.</li>
+      <li>Name it · place it · break it · fix it.</li>
+    </ul>
+  </article>
+
+</main>
+
+<div class="noresult" id="noresult">no cards match. Try fewer words, or press <b>Esc</b></div>
+<footer>press <kbd>/</kbd> to search · <kbd>Esc</kbd> to clear · multi-word search: all words first, closest matches otherwise · links keep your query (<code>?q=</code>)</footer>
+
+<dialog id="welcome" aria-labelledby="w-title">
+  <button class="x" id="w-close" aria-label="Close and show everything">×</button>
+  <h2 id="w-title">What are you interviewing for?</h2>
+  <p>We'll show the cards that matter most at that level. You can switch anytime from the header.</p>
+  <div class="opts">
+    <button data-l="j"><b>Junior</b>fundamentals, coding round, one language deep</button>
+    <button data-l="m"><b>Mid</b>own features: patterns, data, APIs, intro design</button>
+    <button data-l="s"><b>Senior</b>system design, distributed tradeoffs, leadership</button>
+    <button data-l="a"><b>Architect</b>boundaries, NFRs, evolution, strategy</button>
+  </div>
+  <button class="all-btn" data-l="all">Skip, show me everything</button>
+</dialog>
+
+<script>
+  const grid = document.getElementById('grid');
+  const cards = [...grid.querySelectorAll('.card')];
+  const q = document.getElementById('q'), count = document.getElementById('count'),
+        chips = [...document.querySelectorAll('.chip')], noresult = document.getElementById('noresult'), partial = document.getElementById('partial');
+  let cat = 'all', lvl = 'all';
+  const lvlBtns = [...document.querySelectorAll('#lvl button')], dlg = document.getElementById('welcome');
+  const store = { // ponytail: localStorage can throw (private mode); a failed read just shows the modal again
+    get() { try { return localStorage.getItem('ct-level'); } catch { return null; } },
+    set(v) { try { localStorage.setItem('ct-level', v); } catch {} }
+  };
+
+  // index once: body text + title + hidden keywords + categories
+  cards.forEach((c, i) => {
+    c._i = i; c._html = c.innerHTML;
+    c._title = c.querySelector('h3').textContent.toLowerCase();
+    c._txt = (c.textContent + ' ' + (c.dataset.k || '') + ' ' + c.dataset.cat).toLowerCase();
+  });
+  chips.forEach(ch => ch._label = ch.textContent);
+
+  const esc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const inCat = (c, k) => k === 'all' || c.dataset.cat.split(' ').includes(k);
+  const inLvl = c => lvl === 'all' || c.dataset.lvl.split(' ').includes(lvl);
+
+  // score = terms hit (x100) + title bonus; hits = how many distinct terms matched
+  function score(c, terms) {
+    let hits = 0, s = 0;
+    for (const t of terms) if (c._txt.includes(t)) { hits++; s += c._title.includes(t) ? 10 : 1; }
+    return { hits, s: hits * 100 + s };
+  }
+
+  function mark(card, terms) {
+    const re = new RegExp(terms.map(esc).join('|'), 'gi');
+    const walk = document.createTreeWalker(card, NodeFilter.SHOW_TEXT);
+    const nodes = []; while (walk.nextNode()) nodes.push(walk.currentNode);
+    for (const n of nodes) {
+      const s = n.nodeValue; let m, i = 0; re.lastIndex = 0;
+      if (!re.test(s)) continue; re.lastIndex = 0;
+      const f = document.createDocumentFragment();
+      while ((m = re.exec(s))) {
+        f.append(s.slice(i, m.index));
+        const k = document.createElement('mark'); k.textContent = m[0]; f.append(k);
+        i = m.index + m[0].length;
+      }
+      f.append(s.slice(i)); n.replaceWith(f);
+    }
+    card._marked = true;
+  }
+
+  function apply() {
+    const terms = q.value.toLowerCase().split(/\s+/).filter(Boolean);
+    // every term must match; if nothing does, fall back to best partial matches
+    const raw = cards.map(c => [c, terms.length ? score(c, terms) : { hits: 0, s: 1 }]);
+    const need = !terms.length ? 0 : raw.some(([, r]) => r.hits === terms.length) ? terms.length : 1;
+    const scored = raw.map(([c, r]) => [c, r.hits >= need ? r.s : 0]);
+    partial.hidden = !(terms.length > 1 && need === 1 && raw.some(([, r]) => r.hits));
+
+    // chip counts reflect the current search
+    chips.forEach(ch => {
+      const n = scored.filter(([c, s]) => s && inLvl(c) && inCat(c, ch.dataset.c)).length;
+      ch.innerHTML = ''; ch.append(ch._label);
+      const sup = document.createElement('sup'); sup.textContent = n; ch.append(sup);
+      ch.classList.toggle('zero', n === 0);
+    });
+
+    let shown = 0;
+    for (const [c, s] of scored) {
+      if (c._marked) { c.innerHTML = c._html; c._marked = false; }
+      const show = s > 0 && inLvl(c) && inCat(c, cat);
+      c.classList.toggle('hide', !show);
+      if (show) { shown++; if (terms.length) mark(c, terms); }
+    }
+    // best matches first while searching, original order otherwise
+    scored.sort((a, b) => terms.length ? b[1] - a[1] || a[0]._i - b[0]._i : a[0]._i - b[0]._i)
+          .forEach(([c]) => grid.append(c));
+
+    count.textContent = shown + ' / ' + cards.length;
+    lvlBtns.forEach(b => b.setAttribute('aria-pressed', b.dataset.l === lvl));
+    noresult.style.display = shown ? 'none' : 'block';
+    const url = new URL(location); q.value ? url.searchParams.set('q', q.value) : url.searchParams.delete('q');
+    lvl !== 'all' ? url.searchParams.set('lvl', lvl) : url.searchParams.delete('lvl');
+    history.replaceState(null, '', url);
+  }
+
+  q.addEventListener('input', apply);
+  chips.forEach(ch => ch.addEventListener('click', () => {
+    chips.forEach(x => x.classList.remove('on')); ch.classList.add('on');
+    cat = ch.dataset.c; apply();
+  }));
+  document.addEventListener('keydown', e => {
+    if (e.key === '/' && document.activeElement !== q) { e.preventDefault(); q.focus(); }
+    if (e.key === 'Escape') { q.value = ''; apply(); q.blur(); }
+  });
+  function setLevel(l) { lvl = l; store.set(l); if (dlg.open) dlg.close(); apply(); }
+  lvlBtns.forEach(b => b.addEventListener('click', () => setLevel(b.dataset.l)));
+  dlg.querySelectorAll('[data-l]').forEach(b => b.addEventListener('click', () => setLevel(b.dataset.l)));
+  document.getElementById('w-close').addEventListener('click', () => setLevel('all'));
+  dlg.addEventListener('cancel', () => setLevel('all'));   // Esc = show everything
+
+  const params = new URLSearchParams(location.search);
+  q.value = params.get('q') || '';
+  const saved = params.get('lvl') || store.get();
+  if (['all', 'j', 'm', 's', 'a'].includes(saved)) lvl = saved; else dlg.showModal();
+  apply();
+</script>
+</body>
+</html>
