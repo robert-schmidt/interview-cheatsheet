@@ -31,8 +31,8 @@ explain(it)       → the interview
 | **flow** | event-driven design · delivery guarantees · outbox · sagas · Kafka & friends · streams |
 | **ground** | cloud models · AWS/GCP/Azure map · Kubernetes · serverless · IaC · HA/DR |
 | **scale** | system design loop · napkin math · caching · sharding · consistency · rate limiting |
-| **state** | SQL · indexes · isolation levels · picking a store · analytics stack |
-| **wire** | REST · GraphQL · gRPC · HTTP · auth · OWASP · crypto |
+| **state** | SQL · indexes · isolation levels · picking a store · analytics stack · identity resolution |
+| **wire** | REST · GraphQL · gRPC · HTTP · auth · OWASP · crypto · privacy & GDPR |
 | **logic** | Big-O · problem→pattern map · templates · DP · graphs · concurrency |
 | **signal** | ML fundamentals · deep learning · LLMs · prompting · RAG · agents · MCP · LLMOps · the buzzword decoder |
 | **self** | testing · delivery · observability · RCA · STAR · senior signals |

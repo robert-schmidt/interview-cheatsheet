@@ -723,6 +723,7 @@ strategies[method](amount)</code></pre>
       <li><b>CDC</b>: tail the DB log (Debezium) → stream changes as events.</li>
       <li><b>Inbox</b>: consumer-side dedupe table.</li>
       <li><b>Saga</b>: long-running distributed txn = local txns + <b>compensating actions</b> (refund, release stock). No 2PC.</li>
+      <li><b>Workflow engines</b> (Temporal, Step Functions; Airflow for batch DAGs): durable execution, retries and compensation as code.</li>
     </ul>
   </article>
 
@@ -736,7 +737,10 @@ strategies[method](amount)</code></pre>
       <dt>EventBridge</dt><dd>event bus with rules/filters, SaaS integrations</dd>
       <dt>NATS / Redis Streams</dt><dd>lightweight, low-latency messaging</dd>
     </dl>
-    <ul><li class="note">Kafka: parallelism ≤ #partitions per consumer group.</li></ul>
+    <ul>
+      <li><b>Schema registry</b> (Avro / Protobuf / JSON Schema): versioned event contracts. <b>Backward</b> = new readers read old data · <b>forward</b> = old readers read new data · <b>full</b> = both. Additive optional fields are the safe default.</li>
+      <li class="note">Kafka: parallelism ≤ #partitions per consumer group.</li>
+    </ul>
   </article>
 
   <article class="card" data-lvl="s a" data-cat="events data" data-k="stream processing window tumbling sliding session watermark backpressure lambda kappa flink spark" style="--accent:var(--pink)">
@@ -747,6 +751,7 @@ strategies[method](amount)</code></pre>
       <li><b>Event time vs processing time</b>; <b>watermarks</b> handle late data.</li>
       <li><b>Backpressure</b>: slow consumer signals producer to slow down.</li>
       <li><b>Lambda</b> (batch + speed layers) vs <b>Kappa</b> (stream only, replay the log).</li>
+      <li><b>Pick per source</b>: stream what drives real-time decisions (cart, login, fraud signal); batch nightly system-of-record extracts. Say the tradeoff: latency vs cost vs rate limits vs replayability.</li>
       <li>Tools: Flink, Kafka Streams, Spark Structured Streaming, Beam.</li>
     </ul>
   </article>
@@ -781,6 +786,13 @@ strategies[method](amount)</code></pre>
       <tr><td>Queue</td><td>SQS</td><td>Pub/Sub</td><td>Service Bus</td></tr>
       <tr><td>CDN</td><td>CloudFront</td><td>Cloud CDN</td><td>Front Door</td></tr>
       <tr><td>Warehouse</td><td>Redshift</td><td>BigQuery</td><td>Synapse / Fabric</td></tr>
+      <tr><td>Streaming</td><td>Kinesis / MSK</td><td>Pub/Sub / Managed Kafka</td><td>Event Hubs</td></tr>
+      <tr><td>ETL</td><td>Glue</td><td>Dataflow</td><td>Data Factory</td></tr>
+      <tr><td>Workflows</td><td>Step Functions</td><td>Workflows</td><td>Logic Apps / Durable Functions</td></tr>
+      <tr><td>API gateway</td><td>API Gateway</td><td>Apigee / API Gateway</td><td>API Management</td></tr>
+      <tr><td>Keys / secrets</td><td>KMS / Secrets Manager</td><td>Cloud KMS / Secret Manager</td><td>Key Vault</td></tr>
+      <tr><td>Private access</td><td>PrivateLink</td><td>Private Service Connect</td><td>Private Link</td></tr>
+      <tr><td>Monitoring</td><td>CloudWatch / X-Ray</td><td>Cloud Monitoring / Trace</td><td>Monitor / App Insights</td></tr>
       <tr><td>AI</td><td>Bedrock / SageMaker</td><td>Vertex AI</td><td>Azure AI Foundry</td></tr>
     </table>
   </article>
@@ -860,6 +872,22 @@ strategies[method](amount)</code></pre>
       <li><b>6 Deep dive</b>: the hardest part (hot keys, fan-out, consistency).</li>
       <li><b>7 Bottlenecks &amp; tradeoffs</b>: SPOFs, scaling, monitoring, failure modes.</li>
       <li class="note">Drive the conversation. State assumptions out loud.</li>
+    </ul>
+  </article>
+
+  <article class="card" data-lvl="s a" data-cat="sysdesign arch soft" data-k="customer architecture case solution design client enterprise data platform use case first discovery kpi solutions engineer consultant whiteboard" style="--accent:var(--lime)">
+    <h3><span class="tag">SD</span> Customer architecture case</h3>
+    <ul>
+      <li class="lead">Use case before technology. They score the order as much as the content.</li>
+      <li><b>1 Discover</b>: business goal + KPI, timeline, who decides, constraints (regulator, data location, legacy).</li>
+      <li><b>2 Use cases</b>: pick 2–3, rank value/effort, agree the <b>first experiment</b> (weeks, one segment).</li>
+      <li><b>3 Data inventory</b>: sources, owners, freshness, PII, volumes.</li>
+      <li><b>4 Identity &amp; model</b>: person key, schema, labels; plan for additive-only evolution.</li>
+      <li><b>5 Ingest</b>: stream vs batch per source, mapping, error handling + replay.</li>
+      <li><b>6 Serve / activate</b>: who consumes it, at what latency, with which IDs.</li>
+      <li><b>7 Governance</b>: consent, labels → policies, keys, deletion flow.</li>
+      <li><b>8 Operate</b>: SLOs, alerts, runbook, staged rollout, success metric.</li>
+      <li class="note">Say platform limits, guardrails and governance out loud before they ask.</li>
     </ul>
   </article>
 
@@ -1027,7 +1055,27 @@ WITH recent AS (SELECT ... ) SELECT ... FROM recent;</code></pre>
       <li><b>Lake</b> (raw files) · <b>Warehouse</b> (structured, SQL) · <b>Lakehouse</b> (Iceberg/Delta on object storage).</li>
       <li><b>Star schema</b>: fact table + dimension tables.</li>
       <li>Parquet: columnar, compressed, predicate pushdown.</li>
+      <li><b>Reverse ETL</b> (warehouse → SaaS tools) vs <b>zero-copy / federated query</b> (query it in place; data never moves, which regulated clients like).</li>
+      <li><b>CDP</b> (real-time behavioural profile) · <b>MDM</b> (governed golden record) · <b>CRM</b> (sales/service system of record).</li>
     </ul>
+  </article>
+
+  <article class="card" data-lvl="s a" data-cat="data algo" data-k="identity resolution entity resolution record linkage dedupe customer 360 identity graph stitching golden record merge policy over merge graph collapse deterministic probabilistic union find" style="--accent:var(--pink)">
+    <h3><span class="tag">DATA</span> Identity / entity resolution</h3>
+    <ul>
+      <li><b>Deterministic</b> (exact shared key: login ID, hashed email) vs <b>probabilistic</b> (fuzzy name/address/device scoring). Deterministic for anything regulated.</li>
+      <li><b>Identity graph</b> = IDs seen together become one person. That's <b>union-find</b>.</li>
+      <li><b>Primary key choice</b>: stable person ID (CRM ID) over cookie/device. Wrong choice → fragmented profiles.</li>
+      <li class="err"><b>Over-merge / graph collapse</b>: shared device, kiosk, junk values (<code>"null"</code>, <code>test@test.com</code>) glue strangers together. In finance or health that's a privacy breach.</li>
+      <li>Guards: mark keys <b>unique per person</b> (refuse a link joining two different CRM IDs), key priority, cap graph size, block-list junk IDs.</li>
+      <li><b>Merge policy</b> for conflicting attributes: latest timestamp wins vs <b>source precedence</b> (CRM beats web form). Fragments often merged at read time.</li>
+    </ul>
+    <pre><code>def link(a, b):                   <span class="c"># union-find + over-merge guard</span>
+    ra, rb = find(a), find(b)
+    if ra == rb: return
+    ca, cb = crm.get(ra), crm.get(rb)  <span class="c"># CRM ID held by each group</span>
+    if ca and cb and ca != cb: return  <span class="c"># two people: refuse</span>
+    parent[ra] = rb; crm[rb] = cb or ca</code></pre>
   </article>
 
   <!-- ================= APIs / WEB ================= -->
@@ -1175,6 +1223,32 @@ def coins(n):                     <span class="c"># min coins for n</span>
     </ul>
   </article>
 
+  <article class="card" data-lvl="m s" data-cat="algo api" data-k="practical coding integration scripting api client paginated pagination retry exponential backoff jitter 429 dedupe transform json http" style="--accent:var(--green)">
+    <h3><span class="tag">ALGO</span> Practical round: API client</h3>
+    <ul>
+      <li>Common "real work" prompt: call a <b>paginated</b> API, <b>retry</b> with backoff, transform JSON, <b>dedupe</b>.</li>
+      <li>Retry only <b>429 / 5xx / timeouts</b>, honour <code>Retry-After</code>; never retry 4xx validation errors.</li>
+      <li>Follow-ups: rate-limited client (token bucket), idempotent consumer, streaming vs batch.</li>
+    </ul>
+    <pre><code>def fetch_all(url):
+    seen, cursor = set(), None
+    while True:
+        page = get(url, cursor=cursor)
+        for item in page["items"]:
+            if item["id"] not in seen:
+                seen.add(item["id"]); yield item
+        cursor = page.get("next")
+        if not cursor: return
+
+def get(url, tries=5, **params):
+    for n in range(tries):
+        r = http.get(url, params=params, timeout=10)
+        if r.status &lt; 500 and r.status != 429:
+            r.raise_for_status(); return r.json()
+        sleep(min(30, 2 ** n) * random())   <span class="c"># full jitter</span>
+    r.raise_for_status()</code></pre>
+  </article>
+
   <!-- ================= CONCURRENCY ================= -->
   <article class="card" data-lvl="m s a" data-cat="conc" data-k="concurrency parallelism thread process coroutine race condition deadlock livelock starvation mutex semaphore lock atomic cas memory model" style="--accent:var(--amber)">
     <h3><span class="tag">CONC</span> Concurrency core</h3>
@@ -1245,6 +1319,22 @@ def coins(n):                     <span class="c"># min coins for n</span>
     </dl>
   </article>
 
+  <article class="card" data-lvl="s a" data-cat="sec data" data-k="privacy gdpr ccpa data protection governance lawful basis consent minimisation minimization dpia dsar right to erasure delete residency sovereignty schrems scc cmk byok customer managed keys crypto shredding pii classification labels lineage retention ttl pseudonymization anonymization audit log" style="--accent:var(--red)">
+    <h3><span class="tag">SEC</span> Privacy &amp; data governance</h3>
+    <dl class="kv">
+      <dt>GDPR core</dt><dd><b>lawful basis</b> (consent, contract, legitimate interest…), purpose limitation, <b>minimisation</b></dd>
+      <dt>DPIA</dt><dd>impact assessment before high-risk processing</dd>
+      <dt>Data subject rights</dt><dd>access, erasure, portability: one pipeline that reaches <i>every</i> store (lake, caches, backups, vendors)</dd>
+      <dt>Residency vs sovereignty</dt><dd>where data sits vs whose law applies and who can be compelled to access it</dd>
+      <dt>Transfers</dt><dd>outside EU needs SCCs; Schrems II = assess the destination's surveillance law</dd>
+      <dt>CMK / BYOK</dt><dd>customer holds the key; revoke it → data unreadable (crypto-shredding)</dd>
+      <dt>Labels + policy</dt><dd>classify fields (PII, sensitive, contractual); enforce at <b>egress</b>, not just at rest</dd>
+      <dt>Lineage</dt><dd>labels follow data downstream, so violations are blocked and explained</dd>
+      <dt>Pseudonymised</dt><dd>still personal data (re-linkable). <b>Anonymised</b> is not, but is hard to achieve</dd>
+      <dt>Retention</dt><dd>TTLs on events and inactive profiles: compliance <i>and</i> cost</dd>
+    </dl>
+  </article>
+
   <!-- ================= TESTING ================= -->
   <article class="card" data-lvl="j m s" data-cat="test" data-k="testing pyramid unit integration e2e contract tdd bdd mock stub fake spy property based mutation flaky coverage" style="--accent:var(--teal)">
     <h3><span class="tag">TEST</span> Testing essentials</h3>
@@ -1272,6 +1362,8 @@ def coins(n):                     <span class="c"># min coins for n</span>
       <dt>Canary</dt><dd>small % of traffic, watch metrics, widen</dd>
       <dt>Feature flag</dt><dd>decouple deploy from release</dd>
       <dt>Shadow</dt><dd>mirror prod traffic to new version, discard responses</dd>
+      <dt>Ring</dt><dd>widen by cohort: staff → beta → region → all</dd>
+      <dt>Dark launch</dt><dd>new path runs in prod, hidden from users</dd>
       <dt>Semver</dt><dd>MAJOR (breaking) . MINOR (feature) . PATCH (fix)</dd>
       <dt>Expand/contract</dt><dd>backward-compatible DB migrations in steps</dd>
     </dl>
@@ -1286,6 +1378,7 @@ def coins(n):                     <span class="c"># min coins for n</span>
       <li><b>SLI</b> (measure) → <b>SLO</b> (target) → <b>SLA</b> (contract). <b>Error budget</b> = 1 − SLO; spend it on velocity.</li>
       <li>Watch <b>p95/p99</b>, not averages. Alert on user-facing symptoms, not causes.</li>
       <li>Structured logs + correlation / trace IDs across services.</li>
+      <li><b>Data pipeline SLIs:</b> freshness, ingestion lag, batch success rate, end-to-end delivery success.</li>
     </ul>
   </article>
 
@@ -1498,6 +1591,7 @@ answer = llm(f"Answer only from:\n{hits}\n\nQ: {q}")</code></pre>
     <ul>
       <li><b>S</b>ituation (1 line) → <b>T</b>ask (your goal) → <b>A</b>ction (<b>"I"</b>, most detail) → <b>R</b>esult (numbers) → <b>L</b>earning.</li>
       <li>Prep 6–8 stories that flex: conflict, failure, ambiguity, leadership without authority, tough tradeoff, mentoring, biggest impact, disagreeing with a manager.</li>
+      <li>Customer-facing roles add: won over a sceptical stakeholder, said no to scope creep and kept the relationship, prototype that changed a decision, fixed something before it was assigned, field feedback that changed a roadmap.</li>
       <li>Failure story: real mistake, own it, show what changed after.</li>
       <li class="note">2 minutes per story. Let them dig in.</li>
     </ul>
@@ -1510,6 +1604,7 @@ answer = llm(f"Answer only from:\n{hits}\n\nQ: {q}")</code></pre>
       <li>Name the pattern + where you'd use it + <b>how it fails</b>.</li>
       <li>Think in <b>tradeoffs</b>: latency vs consistency, cost vs speed, simple vs flexible.</li>
       <li>Mention ops: monitoring, rollback, migration, on-call impact.</li>
+      <li>Open with the <b>business goal and KPI</b>, then the tech.</li>
       <li><b>Ask them:</b> how do you ship to prod? what does on-call look like? what would make me succeed in 6 months? biggest tech debt?</li>
     </ul>
   </article>
